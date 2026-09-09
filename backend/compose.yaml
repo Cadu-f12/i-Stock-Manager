@@ -1,0 +1,14 @@
+services:
+  db:
+    image: mysql
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_USER: root,
+      MYSQL_ROOT_PASSWORD: 123
+
+  backend:
+    build: .
+    ports:
+      - 8080:8080
