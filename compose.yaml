@@ -9,6 +9,10 @@ services:
       MYSQL_ROOT_PASSWORD: 123
 
   backend:
-    build: .
+    build: backend
     ports:
       - 8080:8080
+  frontend:
+      build: frontend
+      ports:
+        - 5173:80
