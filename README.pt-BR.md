@@ -49,52 +49,6 @@ A aplicação pretende oferecer uma interface simples e intuitiva, permitindo qu
 
 ---
 
-## ⚙️ Funcionalidades Planejadas
-
-> ⚠️ **As funcionalidades abaixo ainda estão em processo de definição.**
-> A equipe está atualmente analisando os requisitos do sistema e decidindo quais funcionalidades farão parte da primeira versão da aplicação.
-
-Entre as funcionalidades atualmente consideradas estão:
-
-### 📦 Gerenciamento de Estoque
-
-* Cadastro de pastilhas.
-* Identificação dos materiais por código e descrição.
-* Cadastro de fabricantes e fornecedores.
-* Definição de estoque mínimo.
-* Consulta das quantidades disponíveis.
-
-### 🔄 Movimentações de Estoque
-
-* Registro de entradas de materiais.
-* Registro de saídas de materiais.
-* Atualização automática das quantidades em estoque.
-* Histórico das movimentações.
-
-### 🚨 Monitoramento do Estoque
-
-* Configuração de níveis mínimos.
-* Identificação de materiais em situação crítica.
-* Alertas para materiais que necessitam de reposição.
-
-### 📊 Relatórios e Dashboard
-
-* Visão geral do estoque.
-* Relatórios de consumo.
-* Histórico de movimentações.
-* Identificação de materiais que precisam de reposição.
-* Situação atual do estoque.
-
-### 🔐 Autenticação e Controle de Acesso
-
-* Autenticação de usuários.
-* Controle de acesso para usuários autorizados.
-* Identificação dos responsáveis pelas movimentações.
-
-> O conjunto definitivo de funcionalidades será definido durante as etapas de análise de requisitos e planejamento do projeto.
-
----
-
 ## 🏗️ Arquitetura do Sistema
 
 A arquitetura inicial será baseada em uma **aplicação web**, separando o frontend e o backend.
@@ -102,7 +56,7 @@ A arquitetura inicial será baseada em uma **aplicação web**, separando o fron
 ```text
 ┌─────────────────────────────┐
 │          Frontend           │
-│          Angular            │
+│          React + Vite       │
 └──────────────┬──────────────┘
                │
                │ HTTP / REST API
@@ -116,7 +70,7 @@ A arquitetura inicial será baseada em uma **aplicação web**, separando o fron
                ▼
 ┌─────────────────────────────┐
 │          Database           │
-│         PostgreSQL          │
+│         MySQL               │
 └─────────────────────────────┘
 ```
 
@@ -145,7 +99,7 @@ A stack tecnológica inicialmente planejada para o projeto é:
 
 ### Banco de Dados
 
-* **PostgreSQL**
+* **MySQL**
 
 ### Ferramentas de Desenvolvimento
 
@@ -155,33 +109,11 @@ A stack tecnológica inicialmente planejada para o projeto é:
 
 ---
 
-## 🔒 Requisitos Não Funcionais
-
-> ⚠️ **Os requisitos não funcionais ainda não foram definidos definitivamente.**
-> A equipe está atualmente analisando os requisitos do sistema e definindo os critérios técnicos e de qualidade que deverão ser atendidos pela solução final.
-
-Entre os aspectos atualmente considerados estão:
-
-* Usabilidade.
-* Desempenho.
-* Segurança.
-* Manutenibilidade.
-* Escalabilidade.
-* Integridade dos dados.
-* Compatibilidade com computadores e dispositivos móveis.
-* Baixo custo de implantação e manutenção.
-* Armazenamento seguro das informações.
-* Autenticação e controle de acesso dos usuários.
-
-Os requisitos não funcionais definitivos serão documentados após a conclusão da análise de requisitos.
-
----
-
 ## 🎓 Contexto Acadêmico
 
 Este projeto está sendo desenvolvido como um **projeto acadêmico de engenharia de software** no:
 
-**SENAI/SC — Fraiburgo, Santa Catarina, Brasil**
+**SENAI/SC — Florianópolis, Santa Catarina, Brasil**
 
 O projeto proporciona a aplicação prática de conceitos de desenvolvimento de software na resolução de um problema real de negócio, incluindo:
 
@@ -198,44 +130,38 @@ O projeto proporciona a aplicação prática de conceitos de desenvolvimento de 
 
 ---
 
-## 🚀 Possíveis Evoluções Futuras
-
-Embora o escopo inicial ainda esteja sendo definido, algumas possíveis evoluções já foram identificadas.
-
-### 🔗 Integração com ERP
-
-Uma das principais possibilidades futuras é a integração do sistema de gerenciamento de estoque com os **sistemas ERP utilizados pela empresa**.
-
-Essa integração poderia permitir o compartilhamento de informações entre o sistema de estoque e outros processos empresariais, como compras, produção e gerenciamento de recursos.
-
-A integração com ERP **não é obrigatória para a primeira versão**, porém a arquitetura do sistema deverá considerar a possibilidade de futuras integrações.
-
-Outras possíveis evoluções incluem:
-
-* Integração com sistemas de compras.
-* Leitura de códigos de barras ou QR Codes.
-* Importação de dados existentes do estoque.
-* Análises avançadas de consumo e estoque.
-
----
-
 ## 📂 Estrutura do Projeto
 
-O projeto está sendo organizado inicialmente utilizando a estrutura padrão de projetos **Maven** para o backend Java.
+O projeto está organizado em uma estrutura **full stack**, separando o backend e o frontend em diretórios independentes.
 
 ```text
-backend/
-├── pom.xml
-└── src/
-    ├── main/
-    │   ├── java/
-    │   │   └── ...
-    │   └── resources/
-    │       └── ...
-    │
-    └── test/
-        └── java/
-            └── ...
+i-Stock-Manager/
+│
+├── backend/                    # Backend da aplicação
+│   ├── pom.xml                # Configuração e dependências do Maven
+│   │
+│   └── src/
+│       ├── main/
+│       │   ├── java/          # Código-fonte da aplicação
+│       │   │   └── ...
+│       │   │
+│       │   └── resources/     # Configurações e recursos
+│       │       └── ...
+│       │
+│       └── test/
+│           └── java/          # Testes automatizados
+│               └── ...
+│
+├── frontend/                   # Frontend da aplicação
+│   ├── package.json            # Dependências e scripts do projeto
+│   ├── vite.config.ts          # Configuração do Vite
+│   ├── tsconfig.json           # Configuração do TypeScript
+│   │
+│   └── src/
+│       └── ...                 # Código-fonte da interface
+│
+└── README.md
+
 ```
 
 A estrutura do frontend e a organização geral do repositório serão definidas conforme a arquitetura do projeto evoluir.
