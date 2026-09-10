@@ -49,52 +49,6 @@ The application is intended to provide a simple and intuitive interface that all
 
 ---
 
-## ⚙️ Planned Features
-
-> ⚠️ **The features listed below are currently under discussion.**
-> The project team is still analyzing the requirements and deciding which functionalities will be included in the first version of the system.
-
-Possible features currently being considered include:
-
-### 📦 Inventory Management
-
-* Registration of cutting inserts.
-* Identification of materials by code and description.
-* Registration of manufacturers and suppliers.
-* Definition of minimum stock levels.
-* Consultation of current stock quantities.
-
-### 🔄 Inventory Movements
-
-* Registration of incoming materials.
-* Registration of outgoing materials.
-* Automatic inventory quantity updates.
-* Inventory movement history.
-
-### 🚨 Stock Monitoring
-
-* Configuration of minimum stock levels.
-* Identification of items with critical inventory levels.
-* Alerts for materials requiring replenishment.
-
-### 📊 Reports and Dashboard
-
-* Inventory overview.
-* Consumption reports.
-* Inventory movement history.
-* Materials requiring replenishment.
-* Current inventory status.
-
-### 🔐 Authentication and Access Control
-
-* User authentication.
-* Access control for authorized users.
-* Tracking of users responsible for inventory operations.
-
-> The final feature set will be defined during the requirements analysis and project planning phases.
-
----
-
 ## 🏗️ System Architecture
 
 The initial architecture is planned around a **web application** using a separated frontend and backend.
@@ -102,7 +56,7 @@ The initial architecture is planned around a **web application** using a separat
 ```text
 ┌─────────────────────────────┐
 │          Frontend           │
-│          Angular            │
+│          React + Vite       │
 └──────────────┬──────────────┘
                │
                │ HTTP / REST API
@@ -116,7 +70,7 @@ The initial architecture is planned around a **web application** using a separat
                ▼
 ┌─────────────────────────────┐
 │          Database           │
-│         PostgreSQL          │
+│         MySQL               │
 └─────────────────────────────┘
 ```
 
@@ -133,6 +87,7 @@ The initial technology stack planned for the project is:
 * **Java**
 * **Spring Boot**
 * **Spring Data JPA**
+* **Spring Security**
 * **Hibernate**
 * **REST API**
 
@@ -145,7 +100,7 @@ The initial technology stack planned for the project is:
 
 ### Database
 
-* **PostgreSQL**
+* **MySQL**
 
 ### Development Tools
 
@@ -155,33 +110,11 @@ The initial technology stack planned for the project is:
 
 ---
 
-## 🔒 Non-Functional Requirements
-
-> ⚠️ **The non-functional requirements have not yet been finalized.**
-> The project team is currently analyzing the system requirements and defining the technical and quality criteria that the final solution must satisfy.
-
-The following aspects are currently being considered during this process:
-
-* Usability.
-* Performance.
-* Security.
-* Maintainability.
-* Scalability.
-* Data integrity.
-* Compatibility with computers and mobile devices.
-* Low implementation and maintenance costs.
-* Secure storage of information.
-* User authentication and access control.
-
-The final non-functional requirements will be documented after the requirements analysis is completed.
-
----
-
 ## 🎓 Academic Context
 
 This project is being developed as an **academic software engineering project** at:
 
-**SENAI/SC — Fraiburgo, Santa Catarina, Brazil**
+**SENAI/SC — Florianópolis, Santa Catarina, Brazil**
 
 The project provides an opportunity to apply software development concepts to a real-world business problem, including:
 
@@ -198,44 +131,37 @@ The project provides an opportunity to apply software development concepts to a 
 
 ---
 
-## 🚀 Future Improvements
-
-Although the initial scope is still being defined, some possible future directions have already been identified.
-
-### 🔗 ERP Integration
-
-One of the main future goals is the possibility of integrating the inventory management system with the **ERP systems used by the company**.
-
-This could allow information to be exchanged between the inventory system and other business processes, such as purchasing, production, and resource management.
-
-ERP integration is **not considered mandatory for the initial version**, but the system architecture should take future integration requirements into consideration.
-
-Other possible future improvements include:
-
-* Integration with purchasing systems.
-* Barcode or QR code scanning.
-* Importing existing inventory data.
-* Advanced inventory analytics.
-
----
-
 ## 📂 Project Structure
 
-The project is currently being organized using the standard **Maven project structure** for the Java backend.
+The project is organized as a **full-stack application**, separating the backend and frontend into independent directories.
 
 ```text
-backend/
-├── pom.xml
-└── src/
-    ├── main/
-    │   ├── java/
-    │   │   └── ...
-    │   └── resources/
-    │       └── ...
-    │
-    └── test/
-        └── java/
-            └── ...
+i-Stock-Manager/
+│
+├── backend/                    # Application backend
+│   ├── pom.xml                # Maven configuration and dependencies
+│   │
+│   └── src/
+│       ├── main/
+│       │   ├── java/          # Application source code
+│       │   │   └── ...
+│       │   │
+│       │   └── resources/     # Configuration files and resources
+│       │       └── ...
+│       │
+│       └── test/
+│           └── java/          # Automated tests
+│               └── ...
+│
+├── frontend/                   # Application frontend
+│   ├── package.json            # Project dependencies and scripts
+│   ├── vite.config.ts          # Vite configuration
+│   ├── tsconfig.json           # TypeScript configuration
+│   │
+│   └── src/
+│       └── ...                 # User interface source code
+│
+└── README.md
 ```
 
 The frontend structure and the overall repository organization will be defined as the project architecture evolves.
