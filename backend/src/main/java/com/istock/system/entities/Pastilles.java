@@ -3,73 +3,72 @@ package com.istock.system.entities;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Entity
-public class PastilhaEntity {
+public class Pastilles {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long pastilha_id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "manufacturer_id",
             nullable = false
     )
-    private List<ManufacturerEntity> manufacturer;
+    private Manufacturer manufacturer;
 
-    @Column(name = "sku_code", nullable = false, unique = true)
-    private String SKUCode;
+    @Column(name = "sku_code", nullable = false, unique = true, length = 30)
+    private String skuCode;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "description", nullable = false, length = 255)
     private String description;
 
     @Column(name = "minimum_stock_level", nullable = false)
     private Integer minimumStockLevel;
 
-    @Column(name = "current_balance", nullable = false)
-    private BigDecimal  currentBalance;
+    @Column(name = "current_balance", nullable = false, precision = 10, scale = 2)
+    private BigDecimal  currentBalance = BigDecimal.ZERO;
 
-    public PastilhaEntity() {}
+    public Pastilles() {}
 
-    public PastilhaEntity(
-            Long pastilha_id,
-            List<ManufacturerEntity> manufacturer,
-            String SKUCode,
+    public Pastilles(
+            Long id,
+            Manufacturer manufacturer,
+            String skuCode,
             String description,
             Integer minimumStockLevel,
             BigDecimal currentBalance
     ) {
-        this.pastilha_id = pastilha_id;
+        this.id = id;
         this.manufacturer = manufacturer;
-        this.SKUCode = SKUCode;
+        this.skuCode = skuCode;
         this.description = description;
         this.minimumStockLevel = minimumStockLevel;
         this.currentBalance = currentBalance;
     }
 
-    public Long getPastilha_id() {
-        return pastilha_id;
+    public Long getId() {
+        return id;
     }
 
-    public void setPastilha_id(Long pastilha_id) {
-        this.pastilha_id = pastilha_id;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public List<ManufacturerEntity> getManufacturer() {
+    public Manufacturer getManufacturer() {
         return manufacturer;
     }
 
-    public void setManufacturer(List<ManufacturerEntity> manufacturer) {
+    public void setManufacturer(Manufacturer manufacturer) {
         this.manufacturer = manufacturer;
     }
 
-    public String getSKUCode() {
-        return SKUCode;
+    public String getSkuCode() {
+        return skuCode;
     }
 
-    public void setSKUCode(String SKUCode) {
-        this.SKUCode = SKUCode;
+    public void setSkuCode(String skuCode) {
+        this.skuCode = skuCode;
     }
 
     public String getDescription() {
