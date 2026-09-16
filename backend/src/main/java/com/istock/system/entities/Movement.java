@@ -27,7 +27,7 @@ public class Movement {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-            name = "movement_id",
+            name = "reason_movement_id",
             nullable = false
     )
     private ReasonMovement reasonMovement;

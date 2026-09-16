@@ -18,11 +18,11 @@ public class Pastille {
     @Column(name = "description", nullable = false, length = 255)
     private String description;
 
-    @Column(name = "minimum_stock_level", nullable = false)
+    @Column(name = "minimum_stock_level", nullable = false, columnDefinition = "INT CHECK (minimum_stock_level >= 0)")
     private Integer minimumStockLevel;
 
-    @Column(name = "current_balance", nullable = false, precision = 10, scale = 2)
-    private BigDecimal  currentBalance = BigDecimal.ZERO;
+    @Column(name = "current_balance", nullable = false)
+    private Integer  currentBalance = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -33,8 +33,8 @@ public class Pastille {
 
     @ManyToMany
     @JoinTable(
-            name = "pastilles_supplier",
-            joinColumns = @JoinColumn(name = "product_id"),
+            name = "pastille_supplier",
+            joinColumns = @JoinColumn(name = "pastille_id"),
             inverseJoinColumns = @JoinColumn(name = "supplier_id")
     )
     private List<Supplier> suppliers;
@@ -49,7 +49,7 @@ public class Pastille {
             String skuCode,
             String description,
             Integer minimumStockLevel,
-            BigDecimal currentBalance,
+            Integer currentBalance,
             Manufacturer manufacturer,
             List<Supplier> suppliers,
             List<Movement> movements
@@ -104,11 +104,11 @@ public class Pastille {
         this.minimumStockLevel = minimumStockLevel;
     }
 
-    public BigDecimal getCurrentBalance() {
+    public Integer getCurrentBalance() {
         return currentBalance;
     }
 
-    public void setCurrentBalance(BigDecimal currentBalance) {
+    public void setCurrentBalance(Integer currentBalance) {
         this.currentBalance = currentBalance;
     }
 

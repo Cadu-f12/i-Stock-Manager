@@ -11,9 +11,6 @@ public class Manufacturer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "manufacturer", fetch = FetchType.LAZY)
-    private List<Pastille> pastilles;
-
     @Column(name = "name", length = 120)
     private String name;
 
@@ -22,6 +19,9 @@ public class Manufacturer {
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
+
+    @OneToMany(mappedBy = "manufacturer", fetch = FetchType.LAZY)
+    private List<Pastille> pastilles;
 
     public Manufacturer() {}
 
