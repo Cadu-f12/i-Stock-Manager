@@ -5,29 +5,28 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "manufacturer")
-public class Manufacturer {
+@Table(name = "supplier")
+public class Supplier {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "manufacturer", fetch = FetchType.LAZY)
-    private List<Pastilles> pastilles;
-
-    @Column(name = "name", length = 120)
+    @Column(nullable = false, length = 120)
     private String name;
 
-    @Column(name = "contact", length = 120, nullable = false)
+    @Column(length = 120)
     private String contact;
 
-    @Column(name = "is_active", nullable = false)
+    @Column(nullable = false)
     private Boolean isActive = true;
 
-    public Manufacturer() {}
+    @ManyToMany(mappedBy = "suppliers")
+    private List<Pastilles> pastilles;
 
-    public Manufacturer(Long id, List<Pastilles> pastilles, String name, String contact, Boolean isActive) {
+    public Supplier() {}
+
+    public Supplier(Long id, String name, String contact, Boolean isActive) {
         this.id = id;
-        this.pastilles = pastilles;
         this.name = name;
         this.contact = contact;
         this.isActive = isActive;
@@ -39,14 +38,6 @@ public class Manufacturer {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public List<Pastilles> getPastilles() {
-        return pastilles;
-    }
-
-    public void setPastilles(List<Pastilles> pastilles) {
-        this.pastilles = pastilles;
     }
 
     public String getName() {
@@ -71,5 +62,13 @@ public class Manufacturer {
 
     public void setActive(Boolean active) {
         isActive = active;
+    }
+
+    public List<Pastilles> getPastilles() {
+        return pastilles;
+    }
+
+    public void setPastilles(List<Pastilles> pastilles) {
+        this.pastilles = pastilles;
     }
 }

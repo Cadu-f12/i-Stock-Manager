@@ -3,8 +3,10 @@ package com.istock.system.entities;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
+@Table(name = "pastilles")
 public class Pastilles {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +30,14 @@ public class Pastilles {
 
     @Column(name = "current_balance", nullable = false, precision = 10, scale = 2)
     private BigDecimal  currentBalance = BigDecimal.ZERO;
+
+    @ManyToMany
+    @JoinTable(
+            name = "pastilles_supplier",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "supplier_id")
+    )
+    private List<Supplier> suppliers;
 
     public Pastilles() {}
 
@@ -93,5 +103,13 @@ public class Pastilles {
 
     public void setCurrentBalance(BigDecimal currentBalance) {
         this.currentBalance = currentBalance;
+    }
+
+    public List<Supplier> getSuppliers() {
+        return suppliers;
+    }
+
+    public void setSuppliers(List<Supplier> suppliers) {
+        this.suppliers = suppliers;
     }
 }
