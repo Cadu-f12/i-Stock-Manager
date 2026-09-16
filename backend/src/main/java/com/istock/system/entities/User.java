@@ -2,6 +2,8 @@ package com.istock.system.entities;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "user")
 public class User {
@@ -21,14 +23,25 @@ public class User {
     @Column(nullable = false)
     private Boolean isActive = true;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Movement> movements;
+
     public User() {}
 
-    public User(Long id, String name, String email, String encryptedPassword, Boolean isActive) {
+    public User(
+            Long id,
+            String name,
+            String email,
+            String encryptedPassword,
+            Boolean isActive,
+            List<Movement> movements
+    ) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.encryptedPassword = encryptedPassword;
         this.isActive = isActive;
+        this.movements = movements;
     }
 
     public Long getId() {
@@ -69,5 +82,13 @@ public class User {
 
     public void setActive(Boolean active) {
         isActive = active;
+    }
+
+    public List<Movement> getMovements() {
+        return movements;
+    }
+
+    public void setMovements(List<Movement> movements) {
+        this.movements = movements;
     }
 }

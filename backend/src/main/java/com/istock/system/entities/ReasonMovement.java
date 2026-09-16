@@ -2,6 +2,8 @@ package com.istock.system.entities;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "reason_movement")
 public class ReasonMovement {
@@ -10,7 +12,7 @@ public class ReasonMovement {
     private Long id;
 
     @Column(length = 80, nullable = false)
-    private String descricao;
+    private String description;
 
     @Column(nullable = false)
     private MovementType type;
@@ -18,13 +20,23 @@ public class ReasonMovement {
     @Column(nullable = false)
     private Boolean isActive = true;
 
+    @OneToMany(mappedBy = "reasonMovement", fetch = FetchType.LAZY)
+    private List<Movement> movements;
+
     public ReasonMovement() {}
 
-    public ReasonMovement(Long id, String descricao, MovementType type, Boolean isActive) {
+    public ReasonMovement(
+            Long id,
+            String description,
+            MovementType type,
+            Boolean isActive,
+            List<Movement> movements
+    ) {
         this.id = id;
-        this.descricao = descricao;
+        this.description = description;
         this.type = type;
         this.isActive = isActive;
+        this.movements = movements;
     }
 
     public Long getId() {
@@ -35,12 +47,12 @@ public class ReasonMovement {
         this.id = id;
     }
 
-    public String getDescricao() {
-        return descricao;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public MovementType getType() {
@@ -57,5 +69,13 @@ public class ReasonMovement {
 
     public void setActive(Boolean active) {
         isActive = active;
+    }
+
+    public List<Movement> getMovements() {
+        return movements;
+    }
+
+    public void setMovements(List<Movement> movements) {
+        this.movements = movements;
     }
 }

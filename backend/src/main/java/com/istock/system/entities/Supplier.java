@@ -21,7 +21,7 @@ public class Supplier {
     private Boolean isActive = true;
 
     @ManyToMany(mappedBy = "suppliers")
-    private List<Pastilles> pastilles;
+    private List<Pastille> pastilles;
 
     public Supplier() {}
 
@@ -64,11 +64,11 @@ public class Supplier {
         isActive = active;
     }
 
-    public List<Pastilles> getPastilles() {
+    public List<Pastille> getPastilles() {
         return pastilles;
     }
 
-    public void setPastilles(List<Pastilles> pastilles) {
+    public void setPastilles(List<Pastille> pastilles) {
         this.pastilles = pastilles;
     }
 }

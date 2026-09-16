@@ -12,7 +12,7 @@ public class Manufacturer {
     private Long id;
 
     @OneToMany(mappedBy = "manufacturer", fetch = FetchType.LAZY)
-    private List<Pastilles> pastilles;
+    private List<Pastille> pastilles;
 
     @Column(name = "name", length = 120)
     private String name;
@@ -25,7 +25,7 @@ public class Manufacturer {
 
     public Manufacturer() {}
 
-    public Manufacturer(Long id, List<Pastilles> pastilles, String name, String contact, Boolean isActive) {
+    public Manufacturer(Long id, List<Pastille> pastilles, String name, String contact, Boolean isActive) {
         this.id = id;
         this.pastilles = pastilles;
         this.name = name;
@@ -41,11 +41,11 @@ public class Manufacturer {
         this.id = id;
     }
 
-    public List<Pastilles> getPastilles() {
+    public List<Pastille> getPastilles() {
         return pastilles;
     }
 
-    public void setPastilles(List<Pastilles> pastilles) {
+    public void setPastilles(List<Pastille> pastilles) {
         this.pastilles = pastilles;
     }
 

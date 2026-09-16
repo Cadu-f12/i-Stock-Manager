@@ -7,17 +7,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "pastilles")
-public class Pastilles {
+public class Pastille {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "manufacturer_id",
-            nullable = false
-    )
-    private Manufacturer manufacturer;
 
     @Column(name = "sku_code", nullable = false, unique = true, length = 30)
     private String skuCode;
@@ -31,6 +24,13 @@ public class Pastilles {
     @Column(name = "current_balance", nullable = false, precision = 10, scale = 2)
     private BigDecimal  currentBalance = BigDecimal.ZERO;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "manufacturer_id",
+            nullable = false
+    )
+    private Manufacturer manufacturer;
+
     @ManyToMany
     @JoinTable(
             name = "pastilles_supplier",
@@ -39,22 +39,29 @@ public class Pastilles {
     )
     private List<Supplier> suppliers;
 
-    public Pastilles() {}
+    @OneToMany(mappedBy = "pastille", fetch = FetchType.LAZY)
+    private List<Movement> movements;
 
-    public Pastilles(
+    public Pastille() {}
+
+    public Pastille(
             Long id,
-            Manufacturer manufacturer,
             String skuCode,
             String description,
             Integer minimumStockLevel,
-            BigDecimal currentBalance
+            BigDecimal currentBalance,
+            Manufacturer manufacturer,
+            List<Supplier> suppliers,
+            List<Movement> movements
     ) {
         this.id = id;
-        this.manufacturer = manufacturer;
         this.skuCode = skuCode;
         this.description = description;
         this.minimumStockLevel = minimumStockLevel;
         this.currentBalance = currentBalance;
+        this.manufacturer = manufacturer;
+        this.suppliers = suppliers;
+        this.movements = movements;
     }
 
     public Long getId() {
@@ -111,5 +118,13 @@ public class Pastilles {
 
     public void setSuppliers(List<Supplier> suppliers) {
         this.suppliers = suppliers;
+    }
+
+    public List<Movement> getMovements() {
+        return movements;
+    }
+
+    public void setMovements(List<Movement> movements) {
+        this.movements = movements;
     }
 }
