@@ -2,8 +2,10 @@ FROM eclipse-temurin:21-jdk
 
 WORKDIR /usr/local/app
 
-COPY . .
+COPY .mvn .mvn
+COPY mvnw pom.xml ./
 
-RUN ./mvnw clean package -DskipTests
+RUN chmod +x mvnw
+RUN ./mvnw dependency:go-offline
 
-ENTRYPOINT ["java","-jar","target/system-0.0.1-SNAPSHOT.jar"]
+CMD ["./mvnw", "spring-boot:run"]
