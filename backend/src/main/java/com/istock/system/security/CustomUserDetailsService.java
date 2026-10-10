@@ -1,4 +1,4 @@
-package com.istock.system.service;
+package com.istock.system.security;
 
 import com.istock.system.entities.User;
 import com.istock.system.repository.UserRepository;
@@ -23,14 +23,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new UsernameNotFoundException(
-                                "Usuário não encontrado"
+                                "User not found"
                         )
                 );
 
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getEncryptedPassword())
-                .authorities("USER")
-                .build();
+        return new CustomUserDetails(user);
     }
 }
