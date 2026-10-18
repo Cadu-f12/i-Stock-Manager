@@ -23,10 +23,11 @@ public class User {
     @Column(nullable = false)
     private Boolean isActive = true;
 
-    @Column(nullable = false, length = 16, columnDefinition = "varchar(16) default 'Operador'")
-    private String role = "Operador";
+    @Column(nullable = false, length = 16, columnDefinition = "varchar(16) default 'Operator'")
+    private String role = "Operator";
 
-    public String getRole() { return role; }
+    // Normalize the role name for accounts stored before the rename.
+    public String getRole() { return "Operador".equals(role) ? "Operator" : role; }
     public void setRole(String role) { this.role = role; }
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)

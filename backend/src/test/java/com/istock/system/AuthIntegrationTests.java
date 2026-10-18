@@ -40,7 +40,7 @@ class AuthIntegrationTests {
         assertEquals(401, call(admin, "POST", "/auth/login", "email=admin%40example.com&password=wrong", true).statusCode());
         assertEquals(204, call(admin, "POST", "/auth/login", "email=admin%40example.com&password=TestPass123!", true).statusCode());
         assertEquals(200, call(admin, "GET", "/auth/me", "", false).statusCode());
-        String input = "{\"name\":\"Operator\",\"email\":\"operator@example.com\",\"active\":true,\"role\":\"Operador\",\"password\":\"Operator123!\"}";
+        String input = "{\"name\":\"Operator\",\"email\":\"operator@example.com\",\"active\":true,\"role\":\"Operator\",\"password\":\"Operator123!\"}";
         var created = call(admin, "POST", "/admin/users", input, true);
         assertEquals(200, created.statusCode(), created.body());
         assertFalse(created.body().contains("password"));

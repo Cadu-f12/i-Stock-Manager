@@ -27,7 +27,7 @@ Abra `http://localhost:5173`. O perfil `local` grava os usuários no banco H2 em
 
 O cadastro inicial é encerrado assim que existe um usuário. Faça essa configuração antes de disponibilizar a instalação na rede. Os usuários fictícios da antiga demonstração não eram gravados no banco e precisam ser cadastrados nesta tela.
 
-Somente Admin pode consultar ou alterar usuários, inclusive pela API. Operador acessa o estoque. Contas inativas ou excluídas não podem entrar; sessões existentes são invalidadas no próximo pedido ao servidor. Alterar a senha também invalida sessões anteriores. A sessão expira após 30 minutos de inatividade. Não é permitido excluir, desativar ou retirar o papel de Admin da própria conta.
+Somente Admin pode consultar ou alterar usuários, inclusive pela API. Operator acessa o estoque. Contas inativas ou excluídas não podem entrar; sessões existentes são invalidadas no próximo pedido ao servidor. Alterar a senha também invalida sessões anteriores. A sessão expira após 30 minutos de inatividade. Não é permitido excluir, desativar ou retirar o papel de Admin da própria conta.
 
 Na edição de usuário, a senha em branco mantém a senha atual. Uma nova senha substitui a anterior. Nenhuma senha ou hash é devolvido pela API. Em HTTPS, configure `SESSION_COOKIE_SECURE=true` e encaminhe `/api` ao backend no mesmo domínio do frontend.
 

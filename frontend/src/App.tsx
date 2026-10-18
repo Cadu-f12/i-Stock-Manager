@@ -1,11 +1,14 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import type { Dispatch, FormEvent, SetStateAction } from 'react'
 import './App.css'
+import './Select.css'
 import Icon from './Icon'
 import Users from './Users'
 import type { User } from './usersData'
 import { api } from './api'
 import ProductHistory from './ProductHistory'
+import StockMovement, { MAX_STOCK } from './StockMovement'
+import type { StockDirection } from './StockMovement'
 import { uncategorized } from './inventoryData'
 import type { Product } from './inventoryData'
 
@@ -72,6 +75,24 @@ function App({ currentUser, onLogout, refreshSession, products, setProducts, cat
   const modalProduct = products.find(product => product.id === modal?.productId)
   const [editingCategory, setEditingCategory] = useState(uncategorized)
   const [notice, setNotice] = useState('')
+  const [movement, setMovement] = useState<{ productId: number; direction: StockDirection } | null>(null)
+  const movementProduct = products.find(product => product.id === movement?.productId)
+  function confirmMovement(quantity: number) {
+    if (!movement || !movementProduct || !Number.isSafeInteger(quantity) || quantity <= 0) return
+    const delta = movement.direction === 'in' ? quantity : -quantity
+    const balance = movementProduct.quantity + delta
+    if (balance < 0 || balance > MAX_STOCK) return
+    const label = movement.direction === 'in' ? 'Entrada' : 'Saída'
+    const at = new Date().toISOString()
+    setProducts(current => current.map(product => {
+      if (product.id !== movement.productId) return product
+      const next = product.quantity + delta
+      if (next < 0 || next > MAX_STOCK) return product
+      return { ...product, quantity: next, updatedAt: today(), history: [{ author: currentUser.name, userId: currentUser.id, at, changes: [`${label} de ${quantity} unidade(s): ${product.quantity} → ${next}`] }, ...(product.history ?? [])] }
+    }))
+    setNotice(`${movementProduct.name}: ${label.toLowerCase()} de ${quantity} unidade(s) registrada. Saldo: ${balance} unidade(s).`)
+    setMovement(null)
+  }
   const dialog = useRef<HTMLDialogElement>(null)
   useEffect(() => { if (modal) dialog.current?.showModal() }, [modal])
   const filtered = products.filter(product => (
@@ -178,7 +199,7 @@ function App({ currentUser, onLogout, refreshSession, products, setProducts, cat
         </section>
         <section className="products-section" aria-labelledby="products-title">
           <div className="table-toolbar"><div><h2 id="products-title">Produtos no estoque</h2><span className="result-count" role="status">{filtered.length} {filtered.length === 1 ? 'resultado' : 'resultados'}</span></div><div className="sort-controls"><label htmlFor="sort">Ordenar por</label><select id="sort" value={sort} onChange={event => setSort(event.target.value as SortKey)}><option value="name">Nome</option><option value="category">Categoria</option><option value="updatedAt">Atualização</option><option value="quantity">Quantidade</option></select><button className="sort-direction" onClick={() => setDescending(!descending)} aria-label={descending ? 'Ordenação decrescente. Alterar para crescente' : 'Ordenação crescente. Alterar para decrescente'}>{descending ? '↓' : '↑'}</button></div></div>
-          <div className="table-scroll"><table><thead><tr><th scope="col">ID</th><th scope="col">Nome do produto</th><th scope="col">Categoria</th><th scope="col">Última atualização</th><th scope="col" className="quantity-column">QTD</th><th scope="col" className="actions-column">Operações</th></tr></thead><tbody>{paginatedProducts.map(product => <tr key={product.id}><td className="product-id">#{String(product.id).padStart(3, '0')}</td><td className="product-name">{product.name}</td><td><span className="category-tag">{product.category}</span></td><td className="date-cell">{formatDate(product.updatedAt)}</td><td className="quantity-column"><span className={`quantity ${product.quantity === 0 ? 'empty-stock' : ''}`}>{product.quantity}</span></td><td><div className="row-actions"><button title="Visualizar produto" aria-label={`Visualizar ${product.name}`} onClick={() => openProductModal('view', product)}><Icon name="eye" /></button><button title="Editar produto" aria-label={`Editar ${product.name}`} onClick={() => openProductModal('edit', product)}><Icon name="edit" /></button></div></td></tr>)}</tbody></table>{!filtered.length && <div className="empty-state"><Icon name="search" /><h3>Nenhum produto encontrado</h3><p>Tente outro termo ou remova os filtros da pesquisa.</p><button className="secondary-button" onClick={clearFilters}>Limpar filtros</button></div>}</div>
+          <div className="table-scroll"><table><thead><tr><th scope="col">ID</th><th scope="col">Nome do produto</th><th scope="col">Categoria</th><th scope="col">Última atualização</th><th scope="col" className="quantity-column">QTD</th><th scope="col" className="actions-column">Operações</th></tr></thead><tbody>{paginatedProducts.map(product => <tr key={product.id}><td className="product-id">#{String(product.id).padStart(3, '0')}</td><td className="product-name">{product.name}</td><td><span className="category-tag">{product.category}</span></td><td className="date-cell">{formatDate(product.updatedAt)}</td><td className="quantity-column"><div className="stock-control"><button type="button" className="stock-button" title="Retirar do estoque" aria-label={`Retirar unidades de ${product.name}`} disabled={product.quantity === 0} onClick={() => setMovement({ productId: product.id, direction: 'out' })}>−</button><span className={`quantity ${product.quantity === 0 ? 'empty-stock' : ''}`}>{product.quantity}</span><button type="button" className="stock-button" title="Adicionar ao estoque" aria-label={`Adicionar unidades a ${product.name}`} disabled={product.quantity >= MAX_STOCK} onClick={() => setMovement({ productId: product.id, direction: 'in' })}>+</button></div></td><td><div className="row-actions"><button title="Visualizar produto" aria-label={`Visualizar ${product.name}`} onClick={() => openProductModal('view', product)}><Icon name="eye" /></button><button title="Editar produto" aria-label={`Editar ${product.name}`} onClick={() => openProductModal('edit', product)}><Icon name="edit" /></button></div></td></tr>)}</tbody></table>{!filtered.length && <div className="empty-state"><Icon name="search" /><h3>Nenhum produto encontrado</h3><p>Tente outro termo ou remova os filtros da pesquisa.</p><button className="secondary-button" onClick={clearFilters}>Limpar filtros</button></div>}</div>
           <footer className="table-footer">
             <span role="status">Exibindo {filtered.length ? pageStart + 1 : 0}–{Math.min(pageStart + pageSize, filtered.length)} de {filtered.length} produtos{hasFilters && ` (${products.length} no total)`}</span>
             <nav className="pagination" aria-label="Paginação dos produtos">
@@ -196,6 +217,7 @@ function App({ currentUser, onLogout, refreshSession, products, setProducts, cat
         <footer className="page-footer"><span>iStock <span> / </span> Organização que faz a diferença.</span><span>GESTÃO DE ESTOQUE</span></footer>
       </main>
       {isAdmin && <Users hidden={screen !== 'users'} users={users} setUsers={setUsers} refreshSession={refreshSession} />}
+      {movement && movementProduct && <StockMovement key={`${movement.productId}-${movement.direction}`} product={movementProduct} direction={movement.direction} onClose={() => setMovement(null)} onConfirm={confirmMovement} />}
       {categoryModal && <dialog ref={categoryDialog} onCancel={() => setCategoryModal(false)} onClose={() => setCategoryModal(false)} aria-labelledby="category-dialog-title">
         <div className="dialog-heading"><h2 id="category-dialog-title">Nova categoria</h2><button className="icon-button" aria-label="Fechar" onClick={() => setCategoryModal(false)}><Icon name="close" /></button></div>
         <form onSubmit={saveCategory}>

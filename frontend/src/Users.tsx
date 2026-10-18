@@ -90,7 +90,7 @@ export default function Users({ hidden, users, setUsers, refreshSession }: { hid
         <label>Nome<input name="name" required maxLength={120} pattern=".*\S.*" title="Informe um nome para o usuário" defaultValue={selected?.name} autoFocus /></label>
         <label>E-mail<input name="email" type="email" required maxLength={60} defaultValue={selected?.email} onChange={event => event.currentTarget.setCustomValidity('')} /></label>
         <label>{selected ? 'Nova senha (opcional)' : 'Senha'}<input name="password" type="password" autoComplete="new-password" required={!selected} minLength={8} maxLength={72} /></label>
-        <label>Papel<select name="role" defaultValue={selected?.role ?? 'Operador'}><option value="Admin">Admin</option><option value="Operador">Operador</option></select></label>
+        <label>Papel<select name="role" defaultValue={selected?.role ?? 'Operator'}><option value="Admin">Admin</option><option value="Operator">Operator</option></select></label>
         <label>Status<select name="status" defaultValue={selected?.active === false ? 'inactive' : 'active'}><option value="active">Ativo</option><option value="inactive">Inativo</option></select></label>
         <p className="form-hint">Use ao menos 8 caracteres na senha. Na edição, deixe em branco para manter a senha atual.</p>
         <div className="dialog-actions"><button type="button" className="secondary-button" onClick={() => setModal(null)}>Cancelar</button><button type="submit" className="primary-button" disabled={busy}>{modal.mode === 'new' ? 'Cadastrar usuário' : 'Salvar alterações'}</button></div>

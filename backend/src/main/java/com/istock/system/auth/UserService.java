@@ -41,7 +41,7 @@ public class UserService {
     private UserView write(Long id, UserInput input) {
         String name = input.name() == null ? "" : input.name().trim();
         String email = input.email() == null ? "" : input.email().trim().toLowerCase(Locale.ROOT);
-        if (name.isEmpty() || name.length() > 120 || email.length() > 60 || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$") || input.active() == null || !("Admin".equals(input.role()) || "Operador".equals(input.role())))
+        if (name.isEmpty() || name.length() > 120 || email.length() > 60 || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$") || input.active() == null || !("Admin".equals(input.role()) || "Operator".equals(input.role())))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe nome, e-mail, status e papel válidos.");
         users.findByEmailIgnoreCase(email).ifPresent(existing -> {
             if (!existing.getId().equals(id)) throw new ResponseStatusException(HttpStatus.CONFLICT, "Este e-mail já está cadastrado.");
