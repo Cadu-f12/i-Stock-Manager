@@ -6,11 +6,13 @@ import Icon from './Icon'
 export type StockDirection = 'in' | 'out'
 export const MAX_STOCK = 999999999
 
-export default function StockMovement({ product, direction, onClose, onConfirm }: {
+export default function StockMovement({ product, direction, onClose, onConfirm, busy, error }: {
   product: Product
   direction: StockDirection
   onClose: () => void
   onConfirm: (quantity: number) => void
+  busy: boolean
+  error: string
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [amount, setAmount] = useState('1')
@@ -23,10 +25,10 @@ export default function StockMovement({ product, direction, onClose, onConfirm }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (valid) onConfirm(quantity)
+    if (valid && !busy) onConfirm(quantity)
   }
 
-  return <dialog ref={dialog} onCancel={onClose} onClose={onClose} aria-labelledby="stock-movement-title" aria-describedby="stock-movement-product">
+  return <dialog ref={dialog} onCancel={event => { if (busy) event.preventDefault(); else onClose() }} onClose={onClose} aria-labelledby="stock-movement-title" aria-describedby="stock-movement-product">
     <div className="dialog-heading"><h2 id="stock-movement-title">{incoming ? 'Adicionar ao estoque' : 'Retirar do estoque'}</h2><button type="button" className="icon-button" aria-label="Fechar" onClick={onClose}><Icon name="close" /></button></div>
     <p className="movement-product" id="stock-movement-product"><strong>{product.name}</strong><span>#{String(product.id).padStart(3, '0')} · {product.category}</span></p>
     <form onSubmit={submit}>
@@ -42,8 +44,9 @@ export default function StockMovement({ product, direction, onClose, onConfirm }
         <div><span>Após {incoming ? 'a entrada' : 'a saída'}</span><strong className={valid ? 'movement-balance' : ''}>{valid ? balance.toLocaleString('pt-BR') : '—'}</strong></div>
       </div>
       <p id="movement-feedback" className={valid ? 'form-hint' : 'form-error'}>{valid ? `${incoming ? '+' : '−'}${quantity.toLocaleString('pt-BR')} ${quantity === 1 ? 'unidade' : 'unidades'} no estoque.${balance === 0 ? ' O produto ficará sem estoque.' : ''}` : !incoming && quantity > limit ? `Estoque insuficiente. Você pode retirar até ${limit.toLocaleString('pt-BR')} unidades.` : `Informe uma quantidade inteira entre 1 e ${limit.toLocaleString('pt-BR')}.`}</p>
-      <p className="form-hint">Dados de demonstração. As alterações são mantidas até recarregar a página.</p>
-      <div className="dialog-actions"><button type="button" className="secondary-button" onClick={onClose}>Cancelar</button><button type="submit" className="primary-button" disabled={!valid}>Confirmar {incoming ? 'entrada' : 'saída'}</button></div>
+      {error && <p role="alert" className="form-error">{error}</p>}
+      <p className="form-hint">A movimentação será salva no histórico do produto.</p>
+      <div className="dialog-actions"><button type="button" className="secondary-button" disabled={busy} onClick={onClose}>Cancelar</button><button type="submit" className="primary-button" disabled={!valid || busy}>{busy ? 'Salvando…' : `Confirmar ${incoming ? 'entrada' : 'saída'}`}</button></div>
     </form>
   </dialog>
 }

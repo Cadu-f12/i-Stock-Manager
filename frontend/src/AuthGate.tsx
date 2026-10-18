@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import App from './App'
-import { initialProducts, initialCategories } from './inventoryData'
+import type { Product } from './inventoryData'
 import Icon from './Icon'
 import { api, ApiError } from './api'
 import type { User } from './usersData'
 
 export default function AuthGate() {
-  const [products, setProducts] = useState(initialProducts)
-  const [categories, setCategories] = useState(initialCategories)
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<string[]>([])
   const [user, setUser] = useState<User | null>(null)
   const [setup, setSetup] = useState(false)
   const [loading, setLoading] = useState(true)

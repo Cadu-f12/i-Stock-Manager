@@ -31,7 +31,11 @@ Somente Admin pode consultar ou alterar usuários, inclusive pela API. Operator 
 
 Na edição de usuário, a senha em branco mantém a senha atual. Uma nova senha substitui a anterior. Nenhuma senha ou hash é devolvido pela API. Em HTTPS, configure `SESSION_COOKIE_SECURE=true` e encaminhe `/api` ao backend no mesmo domínio do frontend.
 
-O estoque ainda usa dados de demonstração em memória. Seu histórico identifica automaticamente o usuário autenticado e é preservado ao trocar de conta na mesma página, mas produtos e histórico continuam sendo reiniciados ao recarregar a página. Usuários e senhas são persistentes.
+Produtos, categorias, saldos e histórico são persistidos no banco pela API `/api/inventory`. O histórico identifica o usuário autenticado no servidor. Entradas e saídas conferem a versão do produto para impedir que operações simultâneas sobrescrevam o saldo. Ao receber um conflito, feche o formulário e use **Atualizar estoque** antes de repetir a operação.
+
+No perfil `local`, os dados ficam em `backend/data/istock.mv.db` quando o backend é iniciado a partir da pasta `backend`. No Docker, os dados ficam no MySQL, no volume `mysql_data`. Os dois ambientes têm bancos independentes; mantenha essas pastas para preservar os cadastros entre reinicializações. Os antigos produtos de demonstração existiam apenas na memória do navegador e não podem ser recuperados depois de recarregar a página.
+
+O cadastro genérico de produtos da interface usa as tabelas `inventory_product`, `inventory_category` e `inventory_product_history`. As tabelas de pastilhas, fabricantes e fornecedores já existentes são preservadas.
 
 ## Verificação
 

@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react'
+﻿import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Dispatch, FormEvent, SetStateAction } from 'react'
 import './App.css'
 import './Select.css'
@@ -10,15 +10,11 @@ import ProductHistory from './ProductHistory'
 import StockMovement, { MAX_STOCK } from './StockMovement'
 import type { StockDirection } from './StockMovement'
 import { uncategorized } from './inventoryData'
-import type { Product } from './inventoryData'
+import type { Inventory, Product } from './inventoryData'
 
 type SortKey = 'name' | 'category' | 'quantity' | 'updatedAt'
 const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
 const formatDate = (value: string) => new Intl.DateTimeFormat('pt-BR').format(new Date(`${value}T12:00:00`))
-function today() {
-  const date = new Date()
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
 function App({ currentUser, onLogout, refreshSession, products, setProducts, categories, setCategories }: {
   currentUser: User; onLogout: () => Promise<void>; refreshSession: () => Promise<void>;
   products: Product[]; setProducts: Dispatch<SetStateAction<Product[]>>;
@@ -77,21 +73,38 @@ function App({ currentUser, onLogout, refreshSession, products, setProducts, cat
   const [notice, setNotice] = useState('')
   const [movement, setMovement] = useState<{ productId: number; direction: StockDirection } | null>(null)
   const movementProduct = products.find(product => product.id === movement?.productId)
+  const [inventoryReady, setInventoryReady] = useState(false)
+  const [inventoryError, setInventoryError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const savingRef = useRef(false)
+  const [reload, setReload] = useState(0)
+  useEffect(() => {
+    let active = true
+    setInventoryReady(false)
+    setInventoryError('')
+    api<Inventory>('/inventory').then(data => {
+      if (!active) return
+      setProducts(data.products); setCategories(data.categories); setInventoryReady(true)
+    }).catch(error => { if (active) setInventoryError(error.message) })
+    return () => { active = false }
+  }, [reload, setProducts, setCategories])
+  const save = useCallback(async (operation: () => Promise<void>) => {
+    if (savingRef.current) return
+    savingRef.current = true; setSaving(true); setInventoryError('')
+    try { await operation() }
+    catch (error) { setInventoryError((error as Error).message) }
+    finally { savingRef.current = false; setSaving(false) }
+  }, [])
   function confirmMovement(quantity: number) {
-    if (!movement || !movementProduct || !Number.isSafeInteger(quantity) || quantity <= 0) return
-    const delta = movement.direction === 'in' ? quantity : -quantity
-    const balance = movementProduct.quantity + delta
-    if (balance < 0 || balance > MAX_STOCK) return
-    const label = movement.direction === 'in' ? 'Entrada' : 'Saída'
-    const at = new Date().toISOString()
-    setProducts(current => current.map(product => {
-      if (product.id !== movement.productId) return product
-      const next = product.quantity + delta
-      if (next < 0 || next > MAX_STOCK) return product
-      return { ...product, quantity: next, updatedAt: today(), history: [{ author: currentUser.name, userId: currentUser.id, at, changes: [`${label} de ${quantity} unidade(s): ${product.quantity} → ${next}`] }, ...(product.history ?? [])] }
-    }))
-    setNotice(`${movementProduct.name}: ${label.toLowerCase()} de ${quantity} unidade(s) registrada. Saldo: ${balance} unidade(s).`)
-    setMovement(null)
+    if (!movement || !movementProduct) return
+    return save(async () => {
+      const product = await api<Product>(`/inventory/products/${movement.productId}/movements`, {
+        method: 'POST', body: JSON.stringify({ direction: movement.direction, quantity, version: movementProduct.version }),
+      })
+      setProducts(current => current.map(item => item.id === product.id ? product : item))
+      setNotice(`${product.name}: movimentação salva. Saldo: ${product.quantity} unidade(s).`)
+      setMovement(null)
+    })
   }
   const dialog = useRef<HTMLDialogElement>(null)
   useEffect(() => { if (modal) dialog.current?.showModal() }, [modal])
@@ -111,56 +124,46 @@ function App({ currentUser, onLogout, refreshSession, products, setProducts, cat
   const hasFilters = Boolean(query || selectedCategories.length || stock !== 'all' || date)
   function clearFilters() { setQuery(''); setSelectedCategories([]); setStock('all'); setDate('') }
   function deleteCategory(category: string) {
-    if (category === uncategorized || !categories.includes(category)) return
-    const count = products.filter(product => product.category === category).length
-    setProducts(current => current.map(product => product.category === category
-      ? { ...product, category: uncategorized, updatedAt: today(), history: [{ author: currentUser.name, userId: currentUser.id, at: new Date().toISOString(), changes: [`Categoria: ${category} → ${uncategorized} (categoria excluída)`] }, ...(product.history ?? [])] }
-      : product))
-    setCategories(current => current.filter(item => item !== category))
-    setSelectedCategories(current => [...new Set(current.map(item => item === category ? uncategorized : item))])
-    setNotice(`${category}: categoria excluída. ${count} ${count === 1 ? 'produto movido' : 'produtos movidos'} para ${uncategorized}.`)
+    if (category === uncategorized) return
+    void save(async () => {
+      const data = await api<Inventory>(`/inventory/categories?name=${encodeURIComponent(category)}`, { method: 'DELETE' })
+      setProducts(data.products); setCategories(data.categories)
+      setSelectedCategories(current => [...new Set(current.map(item => item === category ? uncategorized : item))])
+      setNotice(`${category}: categoria excluída. Produtos movidos para ${uncategorized}.`)
+    })
   }
   function saveCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const input = event.currentTarget.elements.namedItem('categoryName') as HTMLInputElement
     const name = input.value.trim().replace(/\s+/g, ' ')
-    if (!name || categories.some(category => normalize(category) === normalize(name))) {
-      input.setCustomValidity(name ? 'Esta categoria já existe.' : 'Informe um nome para a categoria.')
-      input.reportValidity()
-      return
-    }
-    setCategories(current => [...current, name])
-    setNotice(`${name}: categoria cadastrada nesta demonstração.`)
-    setCategoryModal(false)
+    void save(async () => {
+      const category = await api<{ name: string }>('/inventory/categories', { method: 'POST', body: JSON.stringify({ name }) })
+      setCategories(current => [...current, category.name])
+      setNotice(`${category.name}: categoria cadastrada.`)
+      setCategoryModal(false)
+    })
   }
   function openProductModal(mode: 'view' | 'edit' | 'new', product?: Product) {
     const currentProduct = products.find(item => item.id === product?.id)
+    setInventoryError('')
     setEditingCategory(currentProduct?.category ?? uncategorized)
     setModal({ mode, productId: currentProduct?.id })
   }
   function saveProduct(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
-    const name = String(form.get('name')).trim()
-    if (!name) return
-    const author = currentUser
-    if (modal?.mode === 'edit' && !author) return
-    const product: Product = {
-      id: modal?.productId ?? Math.max(0, ...products.map(item => item.id)) + 1,
-      name, category: categories.includes(editingCategory) ? editingCategory : uncategorized, quantity: Number(form.get('quantity')), updatedAt: today(),
-    }
-    if (modal?.mode === 'edit' && modalProduct && author) {
-      const changes: string[] = []
-      if (product.name !== modalProduct.name) changes.push(`Nome: ${modalProduct.name} → ${product.name}`)
-      if (product.category !== modalProduct.category) changes.push(`Categoria: ${modalProduct.category} → ${product.category}`)
-      if (product.quantity !== modalProduct.quantity) changes.push(`Quantidade: ${modalProduct.quantity} → ${product.quantity}`)
-      product.history = changes.length ? [{ author: author.name, userId: author.id, at: new Date().toISOString(), changes }, ...(modalProduct.history ?? [])] : modalProduct.history
-      if (!changes.length) product.updatedAt = modalProduct.updatedAt
-    }
-    setProducts(current => modal?.mode === 'edit' ? current.map(item => item.id === product.id ? product : item) : [...current, product])
-    setNotice(`${product.name}: ${modal?.mode === 'edit' ? 'alterações salvas' : 'produto cadastrado'} nesta demonstração.`)
-    setModal(null)
+    const input = { name: String(form.get('name')).trim(), category: editingCategory, quantity: Number(form.get('quantity')), version: modalProduct?.version }
+    const editing = modal?.mode === 'edit'
+    void save(async () => {
+      const product = await api<Product>(editing ? `/inventory/products/${modalProduct?.id}` : '/inventory/products', {
+        method: editing ? 'PUT' : 'POST', body: JSON.stringify(input),
+      })
+      setProducts(current => editing ? current.map(item => item.id === product.id ? product : item) : [...current, product])
+      setNotice(`${product.name}: ${editing ? 'alterações salvas' : 'produto cadastrado'}.`)
+      setModal(null)
+    })
   }
+  if (!inventoryReady) return <main><h1>Estoque</h1>{inventoryError ? <><p role="alert" className="form-error">{inventoryError}</p><button className="primary-button" onClick={() => setReload(value => value + 1)}>Tentar novamente</button></> : <p role="status">Carregando estoque…</p>}<button className="secondary-button" onClick={() => void logout()}>Sair</button></main>
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -213,20 +216,20 @@ function App({ currentUser, onLogout, refreshSession, products, setProducts, cat
             </nav>
           </footer>
         </section>
-        <p className="save-notice" role="status">{notice}</p>
+        <p className="save-notice" role="status">{notice}</p>{inventoryError && <div role="alert"><p className="form-error">{inventoryError}</p><button className="secondary-button" disabled={saving} onClick={() => { setModal(null); setMovement(null); setCategoryModal(false); setReload(value => value + 1) }}>Atualizar estoque</button></div>}
         <footer className="page-footer"><span>iStock <span> / </span> Organização que faz a diferença.</span><span>GESTÃO DE ESTOQUE</span></footer>
       </main>
       {isAdmin && <Users hidden={screen !== 'users'} users={users} setUsers={setUsers} refreshSession={refreshSession} />}
-      {movement && movementProduct && <StockMovement key={`${movement.productId}-${movement.direction}`} product={movementProduct} direction={movement.direction} onClose={() => setMovement(null)} onConfirm={confirmMovement} />}
-      {categoryModal && <dialog ref={categoryDialog} onCancel={() => setCategoryModal(false)} onClose={() => setCategoryModal(false)} aria-labelledby="category-dialog-title">
-        <div className="dialog-heading"><h2 id="category-dialog-title">Nova categoria</h2><button className="icon-button" aria-label="Fechar" onClick={() => setCategoryModal(false)}><Icon name="close" /></button></div>
-        <form onSubmit={saveCategory}>
+      {movement && movementProduct && <StockMovement key={`${movement.productId}-${movement.direction}`} product={movementProduct} direction={movement.direction} onClose={() => { if (!saving) { setMovement(null); setInventoryError('') } }} onConfirm={confirmMovement} busy={saving} error={inventoryError} />}
+      {categoryModal && <dialog ref={categoryDialog} onCancel={event => { if (saving) event.preventDefault(); else setCategoryModal(false) }} onClose={() => setCategoryModal(false)} aria-labelledby="category-dialog-title">
+        <div className="dialog-heading"><h2 id="category-dialog-title">Nova categoria</h2><button className="icon-button" aria-label="Fechar" disabled={saving} onClick={() => setCategoryModal(false)}><Icon name="close" /></button></div>
+        <form onSubmit={saveCategory}>{inventoryError && <p role="alert" className="form-error">{inventoryError}</p>}
           <label>Nome da categoria<input name="categoryName" required maxLength={60} autoFocus onChange={event => event.currentTarget.setCustomValidity('')} /></label>
-          <p className="form-hint">Dados de demonstração. As alterações são mantidas até recarregar a página.</p>
-          <div className="dialog-actions"><button type="button" className="secondary-button" onClick={() => setCategoryModal(false)}>Cancelar</button><button className="primary-button" type="submit">Cadastrar categoria</button></div>
+          <p className="form-hint">As alterações serão salvas no estoque.</p>
+          <div className="dialog-actions"><button type="button" className="secondary-button" disabled={saving} onClick={() => setCategoryModal(false)}>Cancelar</button><button className="primary-button" type="submit" disabled={saving}>Cadastrar categoria</button></div>
         </form>
       </dialog>}
-      {modal && <dialog ref={dialog} onCancel={() => setModal(null)} onClose={() => setModal(null)} aria-labelledby="dialog-title"><div className="dialog-heading"><h2 id="dialog-title">{modal.mode === 'new' ? 'Novo produto' : modal.mode === 'edit' ? 'Editar produto' : 'Detalhes do produto'}</h2><button className="icon-button" aria-label="Fechar" onClick={() => setModal(null)}><Icon name="close" /></button></div>{modal.mode === 'view' && modalProduct ? <><dl className="product-details"><dt>ID</dt><dd>#{String(modalProduct.id).padStart(3, '0')}</dd><dt>Nome</dt><dd>{modalProduct.name}</dd><dt>Categoria</dt><dd>{modalProduct.category}</dd><dt>Quantidade</dt><dd>{modalProduct.quantity} unidades</dd><dt>Última atualização</dt><dd>{formatDate(modalProduct.updatedAt)}</dd></dl><ProductHistory entries={modalProduct.history ?? []} /><button className="primary-button" onClick={() => openProductModal('edit', modalProduct)}><Icon name="edit" />Editar produto</button></> : <form key={modalProduct?.id ?? 'new'} onSubmit={saveProduct}><label>Nome do produto<input name="name" required maxLength={120} pattern=".*\S.*" title="Informe um nome para o produto" defaultValue={modalProduct?.name} autoFocus /></label><label>Categoria<select name="category" value={editingCategory} onChange={event => setEditingCategory(event.target.value)}>{categories.map(category => <option key={category} value={category}>{category}</option>)}</select></label><label>Quantidade<input type="number" name="quantity" min="0" max="999999999" step="1" required defaultValue={modalProduct?.quantity ?? 0} /></label><p className="form-hint">Dados de demonstração. As alterações são mantidas até recarregar a página.</p><div className="dialog-actions"><button type="button" className="secondary-button" onClick={() => setModal(null)}>Cancelar</button><button className="primary-button" type="submit">{modal.mode === 'new' ? 'Cadastrar produto' : 'Salvar alterações'}</button></div></form>}</dialog>}
+      {modal && <dialog ref={dialog} onCancel={event => { if (saving) event.preventDefault(); else setModal(null) }} onClose={() => { if (!saving) setModal(null) }} aria-labelledby="dialog-title"><div className="dialog-heading"><h2 id="dialog-title">{modal.mode === 'new' ? 'Novo produto' : modal.mode === 'edit' ? 'Editar produto' : 'Detalhes do produto'}</h2><button className="icon-button" aria-label="Fechar" disabled={saving} onClick={() => setModal(null)}><Icon name="close" /></button></div>{modal.mode === 'view' && modalProduct ? <><dl className="product-details"><dt>ID</dt><dd>#{String(modalProduct.id).padStart(3, '0')}</dd><dt>Nome</dt><dd>{modalProduct.name}</dd><dt>Categoria</dt><dd>{modalProduct.category}</dd><dt>Quantidade</dt><dd>{modalProduct.quantity} unidades</dd><dt>Última atualização</dt><dd>{formatDate(modalProduct.updatedAt)}</dd></dl><ProductHistory entries={modalProduct.history ?? []} /><button className="primary-button" onClick={() => openProductModal('edit', modalProduct)}><Icon name="edit" />Editar produto</button></> : <form key={modalProduct?.id ?? 'new'} onSubmit={saveProduct}>{inventoryError && <p role="alert" className="form-error">{inventoryError}</p>}<label>Nome do produto<input name="name" required maxLength={120} pattern=".*\S.*" title="Informe um nome para o produto" defaultValue={modalProduct?.name} autoFocus /></label><label>Categoria<select name="category" value={editingCategory} onChange={event => setEditingCategory(event.target.value)}>{categories.map(category => <option key={category} value={category}>{category}</option>)}</select></label><label>Quantidade<input type="number" name="quantity" min="0" max="999999999" step="1" required defaultValue={modalProduct?.quantity ?? 0} /></label><p className="form-hint">As alterações serão salvas no estoque.</p><div className="dialog-actions"><button type="button" className="secondary-button" disabled={saving} onClick={() => setModal(null)}>Cancelar</button><button className="primary-button" type="submit" disabled={saving}>{modal.mode === 'new' ? 'Cadastrar produto' : 'Salvar alterações'}</button></div></form>}</dialog>}
     </div>
   )
 }
