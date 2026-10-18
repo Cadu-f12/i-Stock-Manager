@@ -23,6 +23,12 @@ public class User {
     @Column(nullable = false)
     private Boolean isActive = true;
 
+    @Column(nullable = false, length = 16, columnDefinition = "varchar(16) default 'Operador'")
+    private String role = "Operador";
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Movement> movements;
 

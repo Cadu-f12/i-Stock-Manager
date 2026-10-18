@@ -25,5 +25,7 @@ services:
       build: frontend
       ports:
         - 5173:5173
+      environment:
+        API_TARGET: http://backend:8080
       volumes:
         - ./frontend:/app
