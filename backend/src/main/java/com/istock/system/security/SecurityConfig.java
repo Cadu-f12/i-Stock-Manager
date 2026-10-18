@@ -1,5 +1,5 @@
-package com.istock.system.config;
-import com.istock.system.auth.UserRepository;
+package com.istock.system.security;
+import com.istock.system.repository.UserRepository;
 import org.springframework.context.annotation.*;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.*;
@@ -13,17 +13,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.util.Locale;
 @Configuration
 public class SecurityConfig {
     @Bean public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
     private static UserDetails principal(com.istock.system.entities.User user) {
-        return User.withUsername(user.getId().toString()).password(user.getEncryptedPassword())
-            .roles("Admin".equals(user.getRole()) ? "ADMIN" : "OPERATOR").disabled(!Boolean.TRUE.equals(user.getActive())).build();
-    }
-    @Bean public UserDetailsService userDetailsService(UserRepository users) {
-        return email -> principal(users.findByEmailIgnoreCase(email.trim().toLowerCase(Locale.ROOT))
-            .orElseThrow(() -> new UsernameNotFoundException("Invalid credentials")));
+        return new CustomUserDetails(user);
     }
     @Bean public SecurityFilterChain securityFilterChain(HttpSecurity http, UserRepository users) throws Exception {
         http.authorizeHttpRequests(auth -> auth

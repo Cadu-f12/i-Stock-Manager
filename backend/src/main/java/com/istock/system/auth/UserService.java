@@ -1,5 +1,6 @@
 package com.istock.system.auth;
 import com.istock.system.entities.User;
+import com.istock.system.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
