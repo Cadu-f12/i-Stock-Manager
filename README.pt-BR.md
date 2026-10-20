@@ -109,6 +109,95 @@ A stack tecnológica inicialmente planejada para o projeto é:
 
 ---
 
+## Como executar o projeto
+
+Execute os comandos a partir da raiz do repositório (`i-Stock-Manager`).
+
+### Testar a aplicação integrada sem Docker
+
+Com Java 21 e Node.js com npm instalados, abra dois terminais na raiz do repositório. No primeiro, inicie o backend com o perfil `local` (banco H2 persistido em `backend/data`, separado do MySQL):
+
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
+```
+
+No Linux/macOS, use `sh mvnw spring-boot:run -Dspring-boot.run.profiles=local` dentro de `backend`.
+
+No segundo terminal:
+
+```sh
+cd frontend
+npm install
+npm run dev
+```
+
+Após aparecer `Started BackendApplication`, abra http://localhost:5173. Se o banco estiver vazio, a tela solicitará a criação do primeiro administrador. Depois de entrar, cadastre categorias e produtos, registre entradas e saídas e consulte o histórico. Administradores também podem gerenciar usuários. Os dados são enviados à API e permanecem no banco após atualizar a página ou reiniciar o backend.
+
+O frontend usa `/api` no mesmo endereço da página; o proxy do Vite encaminha as chamadas ao backend e mantém os cookies de sessão e a proteção CSRF. Para usar outra porta do backend, copie `frontend/.env.example` para `frontend/.env.local`, ajuste `API_TARGET` e reinicie o Vite. O proxy também funciona com `npm run preview`; em hospedagem estática, configure o servidor para encaminhar `/api` ao backend.
+
+### Com Docker Compose
+
+Com o Docker em execução, inicie o banco de dados, o backend e o frontend:
+
+```sh
+docker compose up --build
+```
+
+Por padrão, o frontend estará em http://localhost:5173 e o backend em http://localhost:8080. Para encerrar os serviços, pressione `Ctrl+C` e execute `docker compose down`.
+
+### Backend e frontend em terminais separados
+
+Pré-requisitos: Java 21, Node.js com npm e Docker para iniciar o MySQL. O backend utiliza o Maven Wrapper incluído no repositório.
+
+Primeiro, inicie apenas o banco de dados e aguarde o MySQL ficar pronto para receber conexões:
+
+```sh
+docker compose up -d db
+```
+
+No Windows, abra o Docker Desktop e aguarde o mecanismo do Docker iniciar antes de executar esse comando. Confira a inicialização do banco com `docker compose logs -f db`; quando aparecer `ready for connections` na porta `3306`, pressione `Ctrl+C` (o banco continuará rodando).
+
+Se o backend encerrar com `Communications link failure` ou `Connection refused`, confira se o MySQL está rodando e se a porta publicada corresponde a `SPRING_MYSQL_PORT`. A mensagem `BUILD SUCCESS` do Maven, sozinha, não confirma que a aplicação iniciou; procure também por `Started BackendApplication`.
+
+No primeiro terminal, execute o backend. No Windows (PowerShell):
+
+```powershell
+cd backend
+$env:SPRING_MYSQL_HOST = "localhost"
+$env:SPRING_MYSQL_PORT = "3307"
+$env:SPRING_MYSQL_DATABASE = "istock"
+$env:SPRING_MYSQL_USERNAME = "root"
+$env:SPRING_MYSQL_PASSWORD = "123"
+.\mvnw.cmd spring-boot:run
+```
+
+No Linux ou macOS:
+
+```sh
+cd backend
+export SPRING_MYSQL_HOST=localhost
+export SPRING_MYSQL_PORT=3307
+export SPRING_MYSQL_DATABASE=istock
+export SPRING_MYSQL_USERNAME=root
+export SPRING_MYSQL_PASSWORD=123
+sh mvnw spring-boot:run
+```
+
+Essas variáveis correspondem aos valores padrão do `compose.yaml`. Caso personalize o banco ou a porta publicada, ajuste-as antes de iniciar o backend.
+
+No segundo terminal, partindo da raiz do repositório, execute o frontend:
+
+```sh
+cd frontend
+npm install
+npm run dev
+```
+
+Acesse o endereço exibido pelo Vite (por padrão, http://localhost:5173). As requisições para `/api` são encaminhadas ao backend em http://localhost:8080.
+
+---
+
 ## 🎓 Contexto Acadêmico
 
 Este projeto está sendo desenvolvido como um **projeto acadêmico de engenharia de software** no:

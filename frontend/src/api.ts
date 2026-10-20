@@ -3,17 +3,25 @@ export class ApiError extends Error {
   constructor(status: number, message: string) { super(message); this.status = status }
 }
 
+function checkAvailability(response: Response) {
+  if ([502, 503, 504].includes(response.status)) {
+    throw new ApiError(response.status, 'Backend indisponível. Confira se ele iniciou e se o banco de dados está acessível.')
+  }
+}
+
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers)
   try {
     if (options.method && options.method !== 'GET') {
       const csrf = await fetch('/api/auth/csrf', { credentials: 'same-origin' })
+      checkAvailability(csrf)
       if (!csrf.ok) throw new ApiError(csrf.status, 'Não foi possível validar a sessão. Tente novamente.')
       const token = await csrf.json() as { headerName: string; token: string }
       headers.set(token.headerName, token.token)
     }
     if (options.body && !(options.body instanceof URLSearchParams)) headers.set('Content-Type', 'application/json')
     const response = await fetch(`/api${path}`, { ...options, headers, credentials: 'same-origin' })
+    checkAvailability(response)
     if (!response.ok) {
       if (response.status === 401 && path !== '/auth/login' && path !== '/auth/me') window.dispatchEvent(new Event('session-expired'))
       const body = await response.json().catch(() => ({})) as { message?: string }
