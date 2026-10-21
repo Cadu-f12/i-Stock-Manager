@@ -3,6 +3,7 @@ package com.istock.system.security;
 import com.istock.system.entities.User;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -18,7 +19,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new SimpleGrantedAuthority("Admin".equals(user.getRole()) ? "ROLE_ADMIN" : "ROLE_OPERATOR"));
     }
 
     @Override
@@ -28,11 +29,11 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return user.getId().toString();
     }
 
     @Override
     public boolean isEnabled() {
-        return user.getActive();
+        return Boolean.TRUE.equals(user.getActive());
     }
 }
