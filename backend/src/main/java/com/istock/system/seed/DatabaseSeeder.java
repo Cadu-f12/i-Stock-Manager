@@ -62,24 +62,24 @@ public class DatabaseSeeder implements CommandLineRunner {
                 return true;
             }
         }
-
         return false;
     }
 
     private void seedUser() {
 
-        if (userRepository.findByEmail("admin").isPresent()) {
+        if (userRepository.findByEmail("admin@istock.com").isPresent()) {
             System.out.println("→ Usuário admin já existe.");
             return;
         }
 
         User admin = new User(
-                null,
-                "Admin",
-                "admin",
-                passwordEncoder.encode("admin"),
-                true,
-                List.of()
+                null,                              // id
+                "ADMIN",                           // role
+                "Admin",                           // name
+                "admin@istock.com",                // email
+                passwordEncoder.encode("admin"),   // password
+                true,                              // isActive
+                List.of()                          // movements
         );
 
         userRepository.save(admin);
@@ -95,19 +95,11 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
 
         Manufacturer sandvik = new Manufacturer(
-                null,
-                List.of(),
-                "Sandvik",
-                "contato@sandvik.com",
-                true
+                null, List.of(), "Sandvik", "contato@sandvik.com", true
         );
 
         Manufacturer kennametal = new Manufacturer(
-                null,
-                List.of(),
-                "Kennametal",
-                "contato@kennametal.com",
-                true
+                null, List.of(), "Kennametal", "contato@kennametal.com", true
         );
 
         manufacturerRepository.saveAll(List.of(sandvik, kennametal));
@@ -123,17 +115,11 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
 
         Supplier supplierOne = new Supplier(
-                null,
-                "Fornecedor Alpha",
-                "alpha@email.com",
-                true
+                null, "Fornecedor Alpha", "alpha@email.com", true
         );
 
         Supplier supplierTwo = new Supplier(
-                null,
-                "Fornecedor Beta",
-                "beta@email.com",
-                true
+                null, "Fornecedor Beta", "beta@email.com", true
         );
 
         supplierRepository.saveAll(List.of(supplierOne, supplierTwo));
@@ -149,35 +135,19 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
 
         ReasonMovement purchase = new ReasonMovement(
-                null,
-                "Compra",
-                MovementType.IN,
-                true,
-                List.of()
+                null, "Compra", MovementType.IN, true, List.of()
         );
 
         ReasonMovement returnReason = new ReasonMovement(
-                null,
-                "Devolução",
-                MovementType.IN,
-                true,
-                List.of()
+                null, "Devolução", MovementType.IN, true, List.of()
         );
 
         ReasonMovement consumption = new ReasonMovement(
-                null,
-                "Consumo em usinagem",
-                MovementType.OUT,
-                true,
-                List.of()
+                null, "Consumo em usinagem", MovementType.OUT, true, List.of()
         );
 
         ReasonMovement disposal = new ReasonMovement(
-                null,
-                "Descarte",
-                MovementType.OUT,
-                true,
-                List.of()
+                null, "Descarte", MovementType.OUT, true, List.of()
         );
 
         reasonMovementRepository.saveAll(
