@@ -23,7 +23,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public @Nullable String getPassword() {
-        return user.getEncryptedPassword();
+        return user.getPassword();
     }
 
     @Override

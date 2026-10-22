@@ -1,15 +1,19 @@
 package com.istock.system.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-
 import java.util.List;
 
 @Entity
-@Table(name = "system_user")
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    private String role;
 
     @Column(nullable = false, length = 120)
     private String name;
@@ -17,12 +21,14 @@ public class User {
     @Column(nullable = false, length = 60, unique = true)
     private String email;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false, length = 255)
-    private String encryptedPassword;
+    private String password;
 
     @Column(nullable = false)
     private Boolean isActive = true;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Movement> movements;
 
@@ -30,16 +36,18 @@ public class User {
 
     public User(
             Long id,
+            String role,
             String name,
             String email,
-            String encryptedPassword,
+            String password,
             Boolean isActive,
             List<Movement> movements
     ) {
         this.id = id;
+        this.role = role;
         this.name = name;
         this.email = email;
-        this.encryptedPassword = encryptedPassword;
+        this.password = password;
         this.isActive = isActive;
         this.movements = movements;
     }
@@ -50,6 +58,14 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public String getName() {
@@ -68,12 +84,12 @@ public class User {
         this.email = email;
     }
 
-    public String getEncryptedPassword() {
-        return encryptedPassword;
+    public String getPassword() {
+        return password;
     }
 
-    public void setEncryptedPassword(String encryptedPassword) {
-        this.encryptedPassword = encryptedPassword;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Boolean getActive() {
