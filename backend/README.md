@@ -96,13 +96,13 @@ The seed is **not executed during a normal application startup**. It must be exp
 From the backend directory, run:
 
 ```bash
-./mvnw spring-boot:run -Dspring-boot.run.arguments="--seed"
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--seed" -Dspring-boot.run.profiles=local
 ```
 
 On Windows:
 
 ```powershell
-.\mvnw.cmd spring-boot:run -Dspring-boot.run.arguments="--seed"
+.\mvnw.cmd spring-boot:run -Dspring-boot.run.arguments="--seed" -Dspring-boot.run.profiles=local
 ```
 
 The seed creates development data such as an administrator user, manufacturers, suppliers, movement reasons, and cutting inserts.
@@ -118,7 +118,7 @@ User passwords are encoded before being persisted in the database and are never 
 For authentication in the **development environment**, use the administrator account created by the database seed:
 
 ```text
-Email: admin
+Email: admin@istock.com
 Password: admin
 ```
 
