@@ -22,6 +22,7 @@ services:
       SPRING_MYSQL_HOST: ${MYSQL_HOST}
       SPRING_MYSQL_USERNAME: ${MYSQL_ROOT_USERNAME}
       SPRING_MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
     volumes:
       - ./backend:/usr/local/app
       - ~/.m2:/root/.m2

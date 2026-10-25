@@ -161,6 +161,13 @@ i-Stock-Manager/
 │   └── src/
 │       └── ...                 # User interface source code
 │
+├── mysql_data/                 # Data of mysql volume (Do not remove!)
+│
+├── compose.yaml                # Docker compose file to containers
+│
+├── .env                        # Your environment variables
+├── .env.example                # Keys of variables
+│ 
 └── README.md
 ```
 
