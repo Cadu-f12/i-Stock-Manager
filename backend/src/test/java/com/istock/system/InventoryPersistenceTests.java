@@ -63,12 +63,18 @@ class InventoryPersistenceTests {
             productId = product.get("id").asLong();
             String path = "/inventory/products/" + productId;
             product = ok(call(first, "PUT", path, "{\"name\":\"Updated drill\",\"category\":\"Tools\",\"quantity\":7,\"version\":" + product.get("version").asLong() + "}", true));
+            assertEquals("Tools", product.get("category").asText(), "Editing quantity must preserve category");
             product = ok(call(first, "POST", path + "/movements", "{\"direction\":\"in\",\"quantity\":3,\"version\":" + product.get("version").asLong() + "}", true));
+            assertEquals("Tools", product.get("category").asText(), "Movement response must include the category");
             assertEquals(10, product.get("quantity").asInt());
             long version = product.get("version").asLong();
             var second = login();
             var requests = List.of(first, second).stream().map(client -> CompletableFuture.supplyAsync(() -> {
-                try { return call(client, "POST", path + "/movements", movement(4, version), true).statusCode(); }
+                try {
+                    var response = call(client, "POST", path + "/movements", movement(4, version), true);
+                    if (response.statusCode() == 200) assertEquals("Tools", json.readTree(response.body()).get("category").asText());
+                    return response.statusCode();
+                }
                 catch (Exception ex) { throw new RuntimeException(ex); }
             })).toList();
             assertEquals(List.of(200, 409), requests.stream().map(CompletableFuture::join).sorted().toList());

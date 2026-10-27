@@ -34,7 +34,7 @@ public class InventoryService {
     public InventoryView list() {
         var names = new ArrayList<String>();
         names.add(UNCATEGORIZED);
-        categories.findAll().stream().map(c -> c.name).sorted().forEach(names::add);
+        categories.findAll().stream().map(InventoryCategory::getName).sorted().forEach(names::add);
         return new InventoryView(products.findAll().stream().map(this::view).toList(), names);
     }
     public String createCategory(String name) {
@@ -44,15 +44,15 @@ public class InventoryService {
             throw error(HttpStatus.CONFLICT, "Esta categoria já existe.");
         var category = new InventoryCategory();
         category.name = name; category.normalizedName = normalized;
-        return categories.saveAndFlush(category).name;
+        return categories.saveAndFlush(category).getName();
     }
     public InventoryView deleteCategory(String name, long actor) {
         if (UNCATEGORIZED.equals(name)) throw error(HttpStatus.BAD_REQUEST, "A categoria padrão não pode ser excluída.");
         var category = category(name);
         for (var product : products.findAll()) {
-            if (product.category != null && product.category.id.equals(category.id)) {
+            if (product.category != null && product.category.getId().equals(category.getId())) {
                 product.category = null;
-                record(product, actor, "Categoria: " + category.name + " → " + UNCATEGORIZED + " (categoria excluída)");
+                record(product, actor, "Categoria: " + category.getName() + " → " + UNCATEGORIZED + " (categoria excluída)");
             }
         }
         products.flush();
@@ -70,7 +70,7 @@ public class InventoryService {
         if (id == null) changes.add("Produto cadastrado com " + input.quantity() + " unidade(s).");
         else {
             if (!product.name.equals(name)) changes.add("Nome: " + product.name + " → " + name);
-            String categoryName = category == null ? UNCATEGORIZED : category.name;
+            String categoryName = category == null ? UNCATEGORIZED : category.getName();
             if (!categoryName(product).equals(categoryName)) changes.add("Categoria: " + categoryName(product) + " → " + categoryName);
             if (product.quantity != quantity) changes.add("Quantidade: " + product.quantity + " → " + quantity);
         }
@@ -116,7 +116,7 @@ public class InventoryService {
         product.updatedAt = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
         product.history.add(0, new InventoryProduct.History(user.getName(), actor, description));
     }
-    private String categoryName(InventoryProduct product) { return product.category == null ? UNCATEGORIZED : product.category.name; }
+    private String categoryName(InventoryProduct product) { return product.category == null ? UNCATEGORIZED : product.category.getName(); }
     private ProductView view(InventoryProduct p) {
         return new ProductView(p.id, p.version, p.name, categoryName(p), p.quantity, p.updatedAt,
             p.history.stream().map(h -> new HistoryView(h.author, h.userId, h.at, Arrays.asList(h.description.split("\n")))).toList());

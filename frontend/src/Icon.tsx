@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react'
 
-type IconName = 'box' | 'search' | 'eye' | 'edit' | 'plus' | 'close' | 'filter' | 'trash' | 'users'
+type IconName = 'box' | 'search' | 'eye' | 'edit' | 'plus' | 'close' | 'filter' | 'trash' | 'users' | 'chart'
 export default function Icon({ name }: { name: IconName }) {
   const paths: Record<IconName, ReactNode> = {
+    chart: <path d="M4 3v18h17M8 16v-5M13 16V6M18 16v-8" />,
     users: <><circle cx="9" cy="8" r="3" /><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 4v2" /></>,
     box: <path d="m12 3 9 5v8l-9 5-9-5V8zM3 8l9 5 9-5M12 13v8M7.5 5.5l9 5" />,
     search: <><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></>,

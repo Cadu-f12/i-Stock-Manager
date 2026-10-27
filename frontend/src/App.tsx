@@ -4,6 +4,7 @@ import './App.css'
 import './Select.css'
 import Icon from './Icon'
 import Users from './Users'
+import Reports from './Reports'
 import type { User } from './usersData'
 import { api } from './api'
 import ProductHistory from './ProductHistory'
@@ -13,6 +14,7 @@ import { uncategorized } from './inventoryData'
 import type { Inventory, Product } from './inventoryData'
 
 type SortKey = 'name' | 'category' | 'quantity' | 'updatedAt'
+const currentScreen = () => window.location.hash === '#usuarios' ? 'users' : window.location.hash === '#relatorios' ? 'reports' : 'products'
 const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
 const formatDate = (value: string) => new Intl.DateTimeFormat('pt-BR').format(new Date(`${value}T12:00:00`))
 function App({ currentUser, onLogout, refreshSession, products, setProducts, categories, setCategories }: {
@@ -20,9 +22,9 @@ function App({ currentUser, onLogout, refreshSession, products, setProducts, cat
   products: Product[]; setProducts: Dispatch<SetStateAction<Product[]>>;
   categories: string[]; setCategories: Dispatch<SetStateAction<string[]>>;
 }) {
-  const [screen, setScreen] = useState(() => window.location.hash === '#usuarios' ? 'users' : 'products')
+  const [screen, setScreen] = useState(currentScreen)
   useEffect(() => {
-    function navigate() { setScreen(window.location.hash === '#usuarios' ? 'users' : 'products'); window.scrollTo(0, 0) }
+    function navigate() { setScreen(currentScreen()); window.scrollTo(0, 0) }
     window.addEventListener('hashchange', navigate)
     return () => window.removeEventListener('hashchange', navigate)
   }, [])
@@ -170,12 +172,13 @@ function App({ currentUser, onLogout, refreshSession, products, setProducts, cat
         <a className="brand" href="#main" aria-label="iStock — início"><span className="brand-symbol"><Icon name="box" /></span><span>iStock<span className="brand-dot">.</span></span></a>
         <span className="nav-caption">GERENCIAMENTO</span>
         <nav aria-label="Menu principal">
-          <a className={`nav-link ${(screen !== 'users' || !isAdmin) ? 'active' : ''}`} href="#estoque" aria-current={(screen !== 'users' || !isAdmin) ? 'page' : undefined}><Icon name="box" /><span>Estoque</span></a>
+          <a className={`nav-link ${(screen === 'products' || !isAdmin) ? 'active' : ''}`} href="#estoque" aria-current={(screen === 'products' || !isAdmin) ? 'page' : undefined}><Icon name="box" /><span>Estoque</span></a>
           {isAdmin && <a className={`nav-link ${screen === 'users' ? 'active' : ''}`} href="#usuarios" aria-current={screen === 'users' ? 'page' : undefined}><Icon name="users" /><span>Usuários</span></a>}
+          {isAdmin && <a className={`nav-link ${screen === 'reports' ? 'active' : ''}`} href="#relatorios" aria-current={screen === 'reports' ? 'page' : undefined}><Icon name="chart" /><span>Relatórios</span></a>}
         </nav>
         <div className="sidebar-footer account-footer"><div><strong>{currentUser.name}</strong><small>{currentUser.role}</small></div><button className="secondary-button" onClick={() => void logout()}>Sair</button>{accountError && <p role="alert" className="form-error">{accountError}</p>}</div>
       </aside>
-      <main id="main" hidden={screen === 'users' && isAdmin}>
+      <main id="main" hidden={screen !== 'products' && isAdmin}>
         <header className="page-header"><div><div className="eyebrow">CONTROLE DE ESTOQUE <span>/</span> PRODUTOS</div><h1>Gestão de produtos<span>.</span></h1><p>Todos os seus produtos, em um só lugar.</p></div><div className="header-actions"><button className="primary-button" onClick={() => openProductModal('new')}><Icon name="plus" /> Novo produto</button><button className="secondary-button" onClick={() => setCategoryModal(true)}><Icon name="plus" /> Nova categoria</button></div></header>
         <div className="inventory-summary"><span><span className="status-dot" /> Visão geral do estoque</span><span><strong>{products.length}</strong> produtos cadastrados <span className="summary-divider">/</span> <strong>{products.reduce((sum, product) => sum + product.quantity, 0).toLocaleString('pt-BR')}</strong> unidades</span></div>
         <section className="filter-panel" aria-label="Filtros de produtos">
@@ -220,6 +223,7 @@ function App({ currentUser, onLogout, refreshSession, products, setProducts, cat
         <footer className="page-footer"><span>iStock <span> / </span> Organização que faz a diferença.</span><span>GESTÃO DE ESTOQUE</span></footer>
       </main>
       {isAdmin && <Users hidden={screen !== 'users'} users={users} setUsers={setUsers} refreshSession={refreshSession} />}
+      {isAdmin && screen === 'reports' && <Reports products={products} categories={categories} />}
       {movement && movementProduct && <StockMovement key={`${movement.productId}-${movement.direction}`} product={movementProduct} direction={movement.direction} onClose={() => { if (!saving) { setMovement(null); setInventoryError('') } }} onConfirm={confirmMovement} busy={saving} error={inventoryError} />}
       {categoryModal && <dialog ref={categoryDialog} onCancel={event => { if (saving) event.preventDefault(); else setCategoryModal(false) }} onClose={() => setCategoryModal(false)} aria-labelledby="category-dialog-title">
         <div className="dialog-heading"><h2 id="category-dialog-title">Nova categoria</h2><button className="icon-button" aria-label="Fechar" disabled={saving} onClick={() => setCategoryModal(false)}><Icon name="close" /></button></div>

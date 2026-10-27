@@ -18,6 +18,14 @@ npm run dev
 ```
 
 Abra `http://localhost:5173`. O perfil `local` grava os usuários no banco H2 em `backend/data/`, preservando-os após reiniciar o servidor. O perfil padrão mantém a conexão MySQL existente. O Docker Compose configura o proxy do frontend para o serviço `backend`.
+ 
+## Relatórios do administrador
+
+Após entrar como Admin, abra **Relatórios** no menu lateral (`#relatorios`). A tela apresenta uma pizza com a quantidade de produtos cadastrados por categoria e barras com as unidades de entradas e saídas por mês. Selecione o ano, a categoria e/ou o produto para filtrar a comparação mensal; a pizza permanece com a distribuição geral. A tabela expansível permite consultar os valores exatos.
+
+Os relatórios utilizam o histórico persistido do estoque, considerando o horário de Brasília e a categoria atual de cada produto. Somente entradas e saídas explícitas são somadas; cadastro com saldo inicial e edições manuais de quantidade não são movimentações nesse relatório. Meses sem movimentação são exibidos com zero.
+
+Para validar os cálculos no frontend com Node.js 24 ou superior: `node --experimental-strip-types --test --test-isolation=none tests/reportData.test.ts`.
 
 ## Primeiro acesso
 
