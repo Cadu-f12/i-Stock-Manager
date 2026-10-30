@@ -54,7 +54,9 @@ public class UserService {
 
         userResponse.setName(user.getName());
         userResponse.setEmail(user.getEmail());
-        userResponse.setPassword(user.getPassword() );
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            userResponse.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
 
         return repository.save(userResponse);
     }

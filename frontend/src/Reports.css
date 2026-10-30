@@ -1,0 +1,18 @@
+.report-card { padding: 24px; margin-bottom: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.report-description { font-size: 12px; color: var(--text-muted); margin: 10px 0 20px; }
+.distribution-layout { display: flex; flex-wrap: wrap; align-items: center; gap: 32px; padding: 12px 0; }
+.category-pie { width: 230px; max-width: 100%; aspect-ratio: 1; border-radius: 50%; flex-shrink: 0; }
+.category-legend { flex: 1; min-width: min(260px, 100%); list-style: none; margin: 0; padding: 0; max-height: 320px; overflow-y: auto; }
+.category-legend li { display: grid; grid-template-columns: 12px 1fr auto 55px; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--border); font-size: 12px; overflow-wrap: anywhere; }
+.category-legend li > span:last-child { text-align: right; color: var(--text-muted); }
+.chart-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.incoming { background: #2563eb; }.outgoing { background: #c2410c; }
+.report-filters { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 16px; padding: 18px; background: var(--surface-muted); border-radius: 8px; }
+.report-filters label { display: grid; gap: 6px; font-size: 12px; flex: 1; min-width: 140px; }
+.report-filters select { width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+.movement-totals { display: flex; flex-wrap: wrap; gap: 16px 28px; margin: 24px 0 12px; font-size: 13px; }
+.movement-totals > span { display: flex; align-items: center; gap: 8px; }
+.monthly-chart-scroll { overflow-x: auto; }.monthly-chart { display: block; width: 100%; min-width: 720px; }
+.monthly-chart text { fill: var(--text-muted); font-size: 12px; }.chart-grid { stroke: var(--border); }
+.report-table summary { cursor: pointer; font-size: 13px; color: var(--accent); padding: 12px 0; }.report-table caption { padding: 12px; text-align: left; }
+@media (max-width: 560px) { .report-card { padding: 16px; }.distribution-layout { justify-content: center; gap: 20px; }.report-filters label { flex-basis: 100%; }.sidebar nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }.sidebar .nav-link { padding: 8px 4px; gap: 5px; } }

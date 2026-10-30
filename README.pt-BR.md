@@ -1,8 +1,28 @@
 # DDA Metalúrgica — Sistema de Gerenciamento de Estoque
 
+## Iniciar no Windows sem Docker nem MySQL
+
+Na raiz do projeto, abra **iniciar-backend.cmd** e **iniciar-frontend.cmd**. Mantenha as duas janelas abertas. Espere o backend mostrar "Started BackendApplication" e o seed terminar.
+
+Acesse http://127.0.0.1:5173 e entre com **admin@istock.com** / **admin**. A senha pode ser alterada na tela de usuários; o seeder preserva contas existentes.
+
+O perfil `standalone` usa H2 persistente em `backend/.local/istock.mv.db`. Os dados permanecem após reiniciar. Esse banco é independente do MySQL; as tabelas de pastilhas continuam separadas dos produtos das telas.
+
+Os scripts usam o JDK 21+ indicado por JAVA_HOME ou pelo arquivo `.local/java-home.txt`, já configurado nesta máquina. Se mover/apagar o JDK, atualize esse caminho. O frontend requer Node.js 24. A chave JWT é gerada na primeira execução e guardada em `.local/jwt-secret.txt`. Esses arquivos locais não entram no Git.
+
+Para encerrar, pressione Ctrl+C em cada janela. Se aparecer "porta em uso", encerre a instância anterior antes de abrir outra. Você também pode executar os scripts em dois terminais PowerShell na raiz:
+
+```powershell
+.\iniciar-backend.cmd
+# Em outro terminal:
+.\iniciar-frontend.cmd
+```
+
 > Projeto acadêmico de desenvolvimento de software voltado para o gerenciamento de estoque de pastilhas industriais utilizadas pela **DDA Metalúrgica**, em Santa Catarina, Brasil.
 
 **🇧🇷 Português** | [🇺🇸 English](README.md)
+
+> Integração do frontend, autenticação JWT, execução e pendências: [guia do frontend](frontend/README.md).
 
 ---
 

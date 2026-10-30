@@ -4,6 +4,8 @@
 
 **🇺🇸 English** | [🇧🇷 Português](README.pt-BR.md)
 
+> Integração do frontend, autenticação JWT, execução e pendências: [guia do frontend](frontend/README.md).
+
 ---
 
 ## 📌 About the Project

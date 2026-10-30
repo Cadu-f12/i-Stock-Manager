@@ -1,2 +1,4 @@
 .env
 /mysql_data
+/.local/
+/backend/.local/
