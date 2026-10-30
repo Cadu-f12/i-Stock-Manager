@@ -1,22 +1,8 @@
 # Frontend iStock integrado
 
-## Iniciar no Windows sem Docker nem MySQL
+## Iniciar o sistema
 
-Na raiz do projeto, abra **iniciar-backend.cmd** e **iniciar-frontend.cmd**. Mantenha as duas janelas abertas. Espere o backend mostrar "Started BackendApplication" e o seed terminar.
-
-Acesse http://127.0.0.1:5173 e entre com **admin@istock.com** / **admin**. A senha pode ser alterada na tela de usuários; o seeder preserva contas existentes.
-
-O perfil `standalone` usa H2 persistente em `backend/.local/istock.mv.db`. Os dados permanecem após reiniciar. Esse banco é independente do MySQL; as tabelas de pastilhas continuam separadas dos produtos das telas.
-
-Os scripts usam o JDK 21+ indicado por JAVA_HOME ou pelo arquivo `.local/java-home.txt`, já configurado nesta máquina. Se mover/apagar o JDK, atualize esse caminho. O frontend requer Node.js 24. A chave JWT é gerada na primeira execução e guardada em `.local/jwt-secret.txt`. Esses arquivos locais não entram no Git.
-
-Para encerrar, pressione Ctrl+C em cada janela. Se aparecer "porta em uso", encerre a instância anterior antes de abrir outra. Você também pode executar os scripts em dois terminais PowerShell na raiz:
-
-```powershell
-.\iniciar-backend.cmd
-# Em outro terminal:
-.\iniciar-frontend.cmd
-```
+Execute o sistema pela raiz com Docker Compose, seguindo o [README principal](../README.md#running-with-docker-compose) ou o [guia em português](../README.pt-BR.md#executar-com-docker-compose). Os guias incluem configuração do ambiente, primeiro acesso e comandos para acompanhar e encerrar os serviços.
 
 React + TypeScript + Vite, conectado ao backend JWT da pasta `../backend`.
 
@@ -37,7 +23,25 @@ O seeder existente cria `admin@istock.com` com senha `admin`, além de dados de 
 
 ## Docker Compose
 
-Na raiz, copie `.env.example` para `.env`, preencha `MYSQL_ROOT_PASSWORD` e `JWT_SECRET` (32 bytes aleatórios codificados em Base64) e execute `docker compose up --build`. O proxy do frontend usa `http://backend:8080` dentro da rede Docker. Aguarde o banco ficar disponível; em uma primeira inicialização, pode ser necessário reiniciar o backend depois disso. Para provisionar o primeiro usuário, com o banco disponível, execute `docker compose run --rm backend ./mvnw spring-boot:run -Dspring-boot.run.arguments=--seed`; após a mensagem de seed finalizado, encerre esse processo e suba os serviços normalmente.
+Com o Docker Desktop aberto, crie `.env` a partir de `.env.example` caso ainda não exista. Preencha `MYSQL_ROOT_PASSWORD` e `JWT_SECRET` (32 bytes aleatórios codificados em Base64). O banco padrão é `istock`; `MYSQL_DATABASE` pode alterar esse nome.
+
+Encerre eventuais instâncias locais do Spring Boot e Vite para liberar as portas. Na raiz, execute:
+
+```powershell
+docker compose up -d --build --wait --wait-timeout 240
+```
+
+O Compose espera o MySQL estar pronto antes de iniciar a API, e a API responder antes de iniciar o frontend. Acesse http://127.0.0.1:5173. O login inicial é **admin@istock.com** / **admin**; o seed preserva a conta caso já exista. Para desativar o seed de desenvolvimento, defina `BACKEND_ARGUMENTS=` no `.env`.
+
+O frontend encaminha `/api` para `http://backend:8080`; a API acessa `db:3306` na rede Docker. `SPRING_PORT` e `REACT_PORT` alteram apenas as portas publicadas no computador (padrões 8080 e 5173). O MySQL fica acessível localmente pela porta 3307. Os endereços internos são definidos pelo Compose, independentemente de `MYSQL_HOST`, `MYSQL_PORT` e `MYSQL_ROOT_USERNAME` do `.env`.
+
+Os dados MySQL permanecem em `mysql_data`. O banco H2 do perfil `standalone` é separado e não é migrado automaticamente. Este Compose é para desenvolvimento, com os fontes montados nos contêineres.
+
+```powershell
+docker compose ps                 # Estado dos três serviços
+docker compose logs -f backend    # Logs da API
+docker compose down               # Encerra sem apagar os dados MySQL
+```
 
 ## Autenticação e permissões
 
@@ -59,7 +63,7 @@ Na raiz, copie `.env.example` para `.env`, preencha `MYSQL_ROOT_PASSWORD` e `JWT
 
 1. **Unificação do estoque:** as telas usam `inventory_product`, `inventory_category` e `inventory_product_history`, trazidas do projeto frontend. As entidades `Pastille`, `Movement`, `Manufacturer`, `Supplier` e `ReasonMovement` da main foram preservadas e não são sincronizadas com essas tabelas. Portanto, pastilhas criadas pelo seeder não aparecem nas telas. É necessário definir o mapeamento de categorias, fabricantes, fornecedores e motivos antes de migrar para um estoque único.
 2. **Implantação:** build gera `dist`; um servidor de produção deve servir esses arquivos e encaminhar `/api` ao backend. O Compose existente continua sendo de desenvolvimento, com Vite e volumes.
-3. **Validação:** testes do backend usam H2 e a cadeia real do Spring Security via MockMvc. Não substituem a verificação com o MySQL real e com Docker, que não foram executados neste ambiente.
+3. **Validação:** testes do backend usam H2 e a cadeia real do Spring Security via MockMvc. Para verificar a integração com MySQL, execute também o Compose e confira o login pelo frontend.
 
 ## Verificação
 

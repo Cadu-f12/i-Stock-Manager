@@ -153,25 +153,27 @@ On Windows:
 
 To run the backend together with the project infrastructure, **do not change the default `application.properties` datasource configuration**.
 
-Navigate to the root directory of the **I-STOCK** project, where the `docker-compose.yaml` file is located:
+Navigate to the root directory of the **I-STOCK** project, where the `compose.yaml` file is located:
 
 ```text
 I-STOCK/
 ├── backend/
 ├── frontend/
-├── docker-compose.yaml
+├── compose.yaml
 └── ...
 ```
 
 Run:
 
 ```bash
-docker compose up --build
+docker compose up -d --build --wait --wait-timeout 240
 ```
 
-Docker Compose will build and start the services defined by the project infrastructure.
+Docker Compose waits for MySQL before starting the API, then waits for the API before starting the frontend. Stop local instances on ports 8080 and 5173 first. See the [main README](../README.md#running-with-docker-compose) for prerequisites and environment setup.
 
-Because the services run inside the Docker network, the backend can communicate with the database using the `db` hostname configured in `application.properties`.
+The Compose environment connects the backend to `db:3306` and the frontend proxy to `backend:8080`. Open http://127.0.0.1:5173. MySQL data is persisted in `mysql_data`; the standalone H2 database is separate and is not automatically migrated.
+
+This development Compose enables `--seed` by default, creating `admin@istock.com` / `admin` only if the account does not exist. Set `BACKEND_ARGUMENTS=` in `.env` to disable it. Inspect service status with `docker compose ps` and API logs with `docker compose logs -f backend`.
 
 To stop the infrastructure, use:
 

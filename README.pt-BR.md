@@ -1,22 +1,97 @@
 # DDA Metalúrgica — Sistema de Gerenciamento de Estoque
 
-## Iniciar no Windows sem Docker nem MySQL
+## Executar com Docker Compose
 
-Na raiz do projeto, abra **iniciar-backend.cmd** e **iniciar-frontend.cmd**. Mantenha as duas janelas abertas. Espere o backend mostrar "Started BackendApplication" e o seed terminar.
+### 1. Pré-requisitos
 
-Acesse http://127.0.0.1:5173 e entre com **admin@istock.com** / **admin**. A senha pode ser alterada na tela de usuários; o seeder preserva contas existentes.
+Instale e abra o Docker Desktop (ou Docker Engine com o plugin Compose no Linux). No Windows, use contêineres Linux. Execute os comandos na raiz do projeto, onde está `compose.yaml`.
 
-O perfil `standalone` usa H2 persistente em `backend/.local/istock.mv.db`. Os dados permanecem após reiniciar. Esse banco é independente do MySQL; as tabelas de pastilhas continuam separadas dos produtos das telas.
+Java, Maven, Node.js e MySQL são executados nos contêineres; não precisam estar instalados no computador. Libere as portas **5173**, **8080** e **3307**, encerrando eventuais instâncias locais do Vite ou Spring Boot.
 
-Os scripts usam o JDK 21+ indicado por JAVA_HOME ou pelo arquivo `.local/java-home.txt`, já configurado nesta máquina. Se mover/apagar o JDK, atualize esse caminho. O frontend requer Node.js 24. A chave JWT é gerada na primeira execução e guardada em `.local/jwt-secret.txt`. Esses arquivos locais não entram no Git.
+```sh
+docker version
+docker compose version
+```
 
-Para encerrar, pressione Ctrl+C em cada janela. Se aparecer "porta em uso", encerre a instância anterior antes de abrir outra. Você também pode executar os scripts em dois terminais PowerShell na raiz:
+### 2. Configurar o ambiente
+
+Se ainda não houver `.env`, copie o exemplo. Preserve o arquivo caso ele já exista:
 
 ```powershell
-.\iniciar-backend.cmd
-# Em outro terminal:
-.\iniciar-frontend.cmd
+# Windows / PowerShell
+Copy-Item .env.example .env
 ```
+
+```sh
+# Linux / macOS
+cp .env.example .env
+```
+
+Preencha no `.env`:
+
+```dotenv
+MYSQL_DATABASE=istock
+MYSQL_ROOT_PASSWORD=substitua_pela_senha_do_banco
+JWT_SECRET=substitua_pela_chave_base64_gerada
+SPRING_PORT=8080
+REACT_PORT=5173
+```
+
+Gere a chave JWT uma vez e copie a saída para `JWT_SECRET`. Ela deve conter exatamente 32 bytes codificados em Base64. No PowerShell:
+
+```powershell
+$bytes = New-Object byte[] 32
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
+[Convert]::ToBase64String($bytes)
+```
+
+No Linux/macOS com OpenSSL:
+
+```sh
+openssl rand -base64 32
+```
+
+Mantenha o `.env` privado e reutilize a chave ao reiniciar. Se `mysql_data` já existir, use a senha originalmente configurada para esse banco; alterar a variável não altera a senha armazenada pelo MySQL.
+
+### 3. Iniciar o sistema
+
+```sh
+docker compose config --quiet
+docker compose up -d --build --wait --wait-timeout 240
+```
+
+O Compose aguarda o MySQL ficar pronto, inicia a API e depois o frontend. A primeira construção baixa dependências e pode levar alguns minutos. Os serviços ficam em segundo plano; você pode fechar o terminal.
+
+Acesse **http://127.0.0.1:5173**. Login inicial de desenvolvimento:
+
+- E-mail: **admin@istock.com**
+- Senha: **admin**
+
+O seed executa na inicialização e preserva contas existentes. Caso a senha já tenha sido alterada, use a senha atual. Para desativar o seed, adicione `BACKEND_ARGUMENTS=` ao `.env`.
+
+O frontend encaminha `/api` para `backend:8080`; a API conecta a `db:3306`. Esses endereços internos são definidos pelo Compose. `MYSQL_HOST`, `MYSQL_PORT` e `MYSQL_ROOT_USERNAME` de arquivos antigos não são usados pelo Compose. `SPRING_PORT` e `REACT_PORT` controlam as portas do computador; o MySQL é publicado em `127.0.0.1:3307`.
+
+### 4. Verificar, encerrar e iniciar novamente
+
+```sh
+docker compose ps
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose down
+```
+
+Os três serviços devem aparecer como `healthy`. Ctrl+C encerra somente a visualização dos logs. `docker compose down` encerra o sistema e preserva os dados MySQL em `mysql_data`.
+
+Para iniciar novamente ou reconstruir após alterações no código/dependências:
+
+```sh
+docker compose up -d --build --wait --wait-timeout 240
+```
+
+O banco H2 do modo standalone, em `backend/.local`, é separado e não é migrado para o MySQL. Este Compose é para desenvolvimento e monta os fontes do projeto nos contêineres.
+
+Se a inicialização falhar, consulte `docker compose logs --tail 100 db backend frontend`. Para conflitos de porta, encerre o processo que ocupa a porta indicada. Para chave JWT inválida, gere uma chave de 32 bytes em Base64. Se apenas o tempo de espera se esgotar, confira os logs e execute novamente `docker compose up -d --wait --wait-timeout 240`.
 
 > Projeto acadêmico de desenvolvimento de software voltado para o gerenciamento de estoque de pastilhas industriais utilizadas pela **DDA Metalúrgica**, em Santa Catarina, Brasil.
 

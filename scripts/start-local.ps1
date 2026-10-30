@@ -32,7 +32,25 @@ try {
         $candidates = @($env:JAVA_HOME)
         if (Test-Path $javaHomeFile) { $candidates += (Get-Content $javaHomeFile -Raw).Trim() }
         $compiler = Get-Command javac.exe -ErrorAction SilentlyContinue
-        if ($compiler) { $candidates += Split-Path -Parent (Split-Path -Parent $compiler.Source) }
+        if ($compiler) {
+            $candidates += Split-Path -Parent (Split-Path -Parent $compiler.Source)
+            # O javapath da Oracle pode ser um atalho fora da pasta do JDK.
+            # Consulte a JVM do compilador para descobrir a instalacao real.
+            $javaProbe = New-Object System.Diagnostics.Process
+            $javaProbe.StartInfo.FileName = $compiler.Source
+            $javaProbe.StartInfo.Arguments = '-J-XshowSettings:properties -version'
+            $javaProbe.StartInfo.UseShellExecute = $false
+            $javaProbe.StartInfo.CreateNoWindow = $true
+            $javaProbe.StartInfo.RedirectStandardError = $true
+            try {
+                [void]$javaProbe.Start()
+                $javaSettings = $javaProbe.StandardError.ReadToEnd()
+                $javaProbe.WaitForExit()
+                if ($javaProbe.ExitCode -eq 0 -and $javaSettings -match '(?m)^\s*java\.home\s*=\s*(.+)$') {
+                    $candidates += $Matches[1].Trim()
+                }
+            } finally { $javaProbe.Dispose() }
+        }
         $jdk = $null
         foreach ($candidate in $candidates) {
             if (-not $candidate -or -not (Test-Path (Join-Path $candidate 'bin/javac.exe'))) { continue }

@@ -1,39 +1,66 @@
 services:
   db:
-    container_name: database
     image: mysql
     restart: always
     ports:
-      - 3307:${MYSQL_PORT:-3306}
+      - "127.0.0.1:3307:3306"
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-istock}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Preencha MYSQL_ROOT_PASSWORD no .env}
     volumes:
       - ./mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_ROOT_PASSWORD\" mysql --protocol=TCP -h 127.0.0.1 -u root -D \"$$MYSQL_DATABASE\" -e 'SELECT 1' >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
 
   backend:
-    container_name: backend
     build: backend
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["./mvnw", "spring-boot:run", "-Dspring-boot.run.arguments=${BACKEND_ARGUMENTS---seed}", "-Dspring-boot.run.jvmArguments=-Dspring.devtools.restart.enabled=false"]
     ports:
-      - 8080:${SPRING_PORT:-8080}
+      - "127.0.0.1:${SPRING_PORT:-8080}:8080"
     environment:
-      SPRING_MYSQL_DATABASE: ${MYSQL_DATABASE}
-      SPRING_MYSQL_PORT: ${MYSQL_PORT}
-      SPRING_MYSQL_HOST: ${MYSQL_HOST}
-      SPRING_MYSQL_USERNAME: ${MYSQL_ROOT_USERNAME}
+      SPRING_MYSQL_DATABASE: ${MYSQL_DATABASE:-istock}
+      SPRING_MYSQL_PORT: 3306
+      SPRING_MYSQL_HOST: db
+      SPRING_MYSQL_USERNAME: root
       SPRING_MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET: ${JWT_SECRET:?Preencha JWT_SECRET no .env}
+      SERVER_PORT: 8080
     volumes:
       - ./backend:/usr/local/app
       - ~/.m2:/root/.m2
+      - backend_target:/usr/local/app/target
+    healthcheck:
+      test: ["CMD-SHELL", "test \"$$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/api/auth/me)\" = 401"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
 
   frontend:
-      container_name: frontend
       build: frontend
+      depends_on:
+        backend:
+          condition: service_healthy
+      command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173", "--strictPort"]
       environment:
         API_TARGET: http://backend:8080
       ports:
-        - 5173:${REACT_PORT:-5173}
+        - "127.0.0.1:${REACT_PORT:-5173}:5173"
       volumes:
         - ./frontend:/app
         - /app/node_modules
+      healthcheck:
+        test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5173').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+        interval: 5s
+        timeout: 5s
+        retries: 12
+
+volumes:
+  backend_target:

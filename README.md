@@ -8,6 +8,101 @@
 
 ---
 
+## Running with Docker Compose
+
+### 1. Prerequisites
+
+Install Docker Desktop (or Docker Engine with the Compose plugin on Linux) and start it. On Windows, use Linux containers. Run all commands below from the project root, where `compose.yaml` is located.
+
+Java, Maven, Node.js and MySQL run inside the containers; they do not need to be installed on the host. Ports **5173**, **8080** and **3307** must be available. Stop any local Vite or Spring Boot instance using these ports.
+
+```sh
+docker version
+docker compose version
+```
+
+### 2. Configure the environment
+
+If `.env` does not exist, copy the example. Keep an existing `.env`:
+
+```powershell
+# Windows / PowerShell
+Copy-Item .env.example .env
+```
+
+```sh
+# Linux / macOS
+cp .env.example .env
+```
+
+Fill in these values in `.env`:
+
+```dotenv
+MYSQL_DATABASE=istock
+MYSQL_ROOT_PASSWORD=replace_with_your_database_password
+JWT_SECRET=replace_with_a_generated_base64_key
+SPRING_PORT=8080
+REACT_PORT=5173
+```
+
+Generate the JWT key once, then copy the output into `JWT_SECRET`. It must decode to exactly 32 bytes. In PowerShell:
+
+```powershell
+$bytes = New-Object byte[] 32
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
+[Convert]::ToBase64String($bytes)
+```
+
+On Linux/macOS with OpenSSL:
+
+```sh
+openssl rand -base64 32
+```
+
+Keep `.env` private and reuse the same key between restarts. For an existing `mysql_data` directory, use the database password originally configured; changing the environment variable does not change the stored MySQL password.
+
+### 3. Start the system
+
+```sh
+docker compose config --quiet
+docker compose up -d --build --wait --wait-timeout 240
+```
+
+Compose starts MySQL, waits for it to be ready, then starts the API and frontend. The first build downloads dependencies and may take several minutes. The services run in the background, so the terminal can be closed.
+
+Open **http://127.0.0.1:5173**. Initial development login:
+
+- Email: **admin@istock.com**
+- Password: **admin**
+
+The development seed runs on startup and preserves existing accounts. If the password was changed, use the current one. To disable the seed, add `BACKEND_ARGUMENTS=` to `.env`.
+
+The frontend proxies `/api` to `backend:8080`; the API connects to `db:3306`. These internal addresses are fixed by Compose. `MYSQL_HOST`, `MYSQL_PORT` and `MYSQL_ROOT_USERNAME` from older environment files are not used by Compose. `SPRING_PORT` and `REACT_PORT` control host ports; MySQL is exposed at `127.0.0.1:3307`.
+
+### 4. Check, stop and start again
+
+```sh
+docker compose ps
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose down
+```
+
+All three services should show `healthy`. Ctrl+C stops log viewing only. `docker compose down` stops the system and preserves MySQL data in `mysql_data`.
+
+To start again or rebuild after code/dependency changes:
+
+```sh
+docker compose up -d --build --wait --wait-timeout 240
+```
+
+The standalone H2 database in `backend/.local` is separate and is not migrated into MySQL. This Compose setup is for development and mounts the project source into the containers.
+
+If startup fails, run `docker compose logs --tail 100 db backend frontend`. A port conflict requires stopping the application using that port; an invalid JWT key requires a Base64 key containing 32 bytes. If startup only exceeded the wait timeout, inspect the logs and run `docker compose up -d --wait --wait-timeout 240` again.
+
+---
+
 ## 📌 About the Project
 
 The **DDA Metalúrgica Inventory Management System** is a web application being developed to improve the management of industrial cutting inserts used in the company's machining and manufacturing processes.
