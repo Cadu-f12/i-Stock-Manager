@@ -137,31 +137,37 @@ O projeto está organizado em uma estrutura **full stack**, separando o backend 
 ```text
 i-Stock-Manager/
 │
-├── backend/                    # Backend da aplicação
-│   ├── pom.xml                # Configuração e dependências do Maven
+├── backend/                    # Application backend
+│   ├── pom.xml                # Maven configuration and dependencies
 │   │
 │   └── src/
 │       ├── main/
-│       │   ├── java/          # Código-fonte da aplicação
+│       │   ├── java/          # Application source code
 │       │   │   └── ...
 │       │   │
-│       │   └── resources/     # Configurações e recursos
+│       │   └── resources/     # Configuration files and resources
 │       │       └── ...
 │       │
 │       └── test/
-│           └── java/          # Testes automatizados
+│           └── java/          # Automated tests
 │               └── ...
 │
-├── frontend/                   # Frontend da aplicação
-│   ├── package.json            # Dependências e scripts do projeto
-│   ├── vite.config.ts          # Configuração do Vite
-│   ├── tsconfig.json           # Configuração do TypeScript
+├── frontend/                   # Application frontend
+│   ├── package.json            # Project dependencies and scripts
+│   ├── vite.config.ts          # Vite configuration
+│   ├── tsconfig.json           # TypeScript configuration
 │   │
 │   └── src/
-│       └── ...                 # Código-fonte da interface
+│       └── ...                 # User interface source code
 │
+├── mysql_data/                 # Data of mysql volume (Do not remove!)
+│
+├── compose.yaml                # Docker compose file to containers
+│
+├── .env                        # Your environment variables
+├── .env.example                # Keys of variables
+│ 
 └── README.md
-
 ```
 
 A estrutura do frontend e a organização geral do repositório serão definidas conforme a arquitetura do projeto evoluir.
