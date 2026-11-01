@@ -64,6 +64,24 @@ public class Pastille {
         this.movements = movements;
     }
 
+    public Pastille(
+            String skuCode,
+            String description,
+            Integer minimumStockLevel,
+            Integer currentBalance,
+            Manufacturer manufacturer,
+            List<Supplier> suppliers,
+            List<Movement> movements
+    ) {
+        this.skuCode = skuCode;
+        this.description = description;
+        this.minimumStockLevel = minimumStockLevel;
+        this.currentBalance = currentBalance;
+        this.manufacturer = manufacturer;
+        this.suppliers = suppliers;
+        this.movements = movements;
+    }
+
     public Long getId() {
         return id;
     }

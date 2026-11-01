@@ -17,6 +17,32 @@ public class GlobalExceptionHandler {
                 .body(ex.getMessage());
     }
 
+    @ExceptionHandler(PastilleAlreadyExists.class)
+    public ResponseEntity<ApiError> handlePastilleAlreadyExists(PastilleAlreadyExists ex) {
+        ApiError error = new ApiError(
+                HttpStatus.CONFLICT.value(),
+                "PASTILLE_ALREADY_EXISTS",
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(error);
+    }
+
+    @ExceptionHandler(ManufacturerNotFound.class)
+    public ResponseEntity<ApiError> handleManufacturerNotFound(ManufacturerNotFound ex) {
+        ApiError error = new ApiError(
+                HttpStatus.NOT_FOUND.value(),
+                "MANUFACTURER_NOT_FOUND",
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> handleMethodArgumentTypeMismatch(
             MethodArgumentTypeMismatchException ex
