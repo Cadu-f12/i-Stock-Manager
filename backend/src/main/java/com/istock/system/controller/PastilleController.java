@@ -1,12 +1,12 @@
 package com.istock.system.controller;
 
+import com.istock.system.dtos.request.RegistryPastilleRequest;
 import com.istock.system.dtos.response.PastilleDTO;
 import com.istock.system.service.PastilleService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,5 +23,12 @@ public class PastilleController {
     @GetMapping
     public ResponseEntity<List<PastilleDTO>> findAll(@RequestParam(name="on_alert", required = false) Boolean onAlert) {
         return ResponseEntity.ok(pastilleService.findAll(onAlert));
+    }
+
+    @PostMapping
+    public ResponseEntity<PastilleDTO> registerPastille(@RequestBody @Valid RegistryPastilleRequest body) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(pastilleService.registerPastille(body));
     }
 }

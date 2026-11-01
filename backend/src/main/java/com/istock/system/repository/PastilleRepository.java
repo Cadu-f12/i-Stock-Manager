@@ -1,6 +1,5 @@
 package com.istock.system.repository;
 
-import com.istock.system.dtos.response.PastilleDTO;
 import com.istock.system.entities.Pastille;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +14,5 @@ public interface PastilleRepository extends JpaRepository<Pastille, Long> {
     """)
     List<Pastille> findAllOnAlert();
 
+    Boolean existsBySkuCode(String skuCode);
 }
