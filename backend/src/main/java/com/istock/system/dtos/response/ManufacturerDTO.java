@@ -9,6 +9,5 @@ public record ManufacturerDTO(
        String name,
        String contact,
        @JsonProperty("is_active")
-       Boolean isActive,
-        List<PastilleDTO> pastilles
+       Boolean isActive
 ) {}

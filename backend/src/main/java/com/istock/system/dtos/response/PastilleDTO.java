@@ -13,7 +13,5 @@ public record PastilleDTO(
         Integer minimumStockLevel,
         @JsonProperty("current_balance")
         Integer  currentBalance,
-        ManufacturerDTO manufacturer,
-        List<SupplierDTO> suppliers,
-        List<MovementDTO> movements
+        String manufacturer
 ) {}
