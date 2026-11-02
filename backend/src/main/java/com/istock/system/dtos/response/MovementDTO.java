@@ -6,10 +6,9 @@ import java.time.LocalDateTime;
 
 public record MovementDTO(
         Long id,
-        PastilleDTO pastille,
-        UserResponseDTO user,
-        @JsonProperty("reason_movement")
-        ReasonMovementDTO reasonMovement,
         Integer quantity,
-        LocalDateTime dateTime
+        @JsonProperty("date_time")
+        LocalDateTime dateTime,
+        ReasonMovementDTO reason,
+        UserDTO user
 ) {}
