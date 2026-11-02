@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PastilleRepository extends JpaRepository<Pastille, Long> {
     @Query("""
@@ -15,4 +16,7 @@ public interface PastilleRepository extends JpaRepository<Pastille, Long> {
     List<Pastille> findAllOnAlert();
 
     Boolean existsBySkuCode(String skuCode);
+
+    @Override
+    Optional<Pastille> findById(Long id);
 }

@@ -2,8 +2,6 @@ package com.istock.system.dtos.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.List;
-
 public record ManufacturerDTO(
        Long id,
        String name,
