@@ -1,7 +1,12 @@
 package com.istock.system.controller;
 
+import com.istock.system.dtos.request.UserRequestDTO;
+import com.istock.system.dtos.response.UserResponseDTO;
 import com.istock.system.entities.User;
 import com.istock.system.service.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,41 +15,47 @@ import java.util.List;
 @RequestMapping("/user")
 public class UserController {
 
-    private final UserService service;
+    private final UserService userService;
 
-    public UserController(UserService service) {
-        this.service = service;
+    public UserController(UserService userService) {
+        this.userService = userService;
      }
 
      @GetMapping("/{id}")
-    public User getUser(@PathVariable Long id) {
-         return service.getUser(id);
+    public UserResponseDTO getUser(@PathVariable Long id) {
+         return userService.getUser(id);
      }
 
      @GetMapping
-    public List<User> getAllUsers() {
-        return service.getAllUsers();
+    public List<UserResponseDTO> getAllUsers() {
+        return userService.getAllUsers();
     }
 
      @PostMapping("/createUser")
-    public User createUser(@RequestBody User user) {
-        return service.createUser(user);
+    public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserRequestDTO dto) {
+         UserResponseDTO response =  userService.createUser(dto);
+
+         return ResponseEntity
+                 .status(HttpStatus.CREATED)
+                 .body(response);
+
+
     }
 
      @PostMapping("/fetchUser")
-    public User fetchUser(@RequestBody User user) {
-        return service.fetchUser(user.getEmail());
+    public UserResponseDTO fetchUser(@RequestBody UserRequestDTO dto) {
+        return userService.fetchUser(dto.email());
     }
 
     @PutMapping("/updateUser/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody User user) {
+    public UserResponseDTO updateUser(@PathVariable Long id, @RequestBody UserRequestDTO dto) {
 
-        return service.updateUser(id, user);
+        return userService.updateUser(id, dto);
     }
 
     @DeleteMapping("/deleteUser/{id}")
-    public User deleteUser(@PathVariable Long id) {
+    public UserResponseDTO deleteUser(@PathVariable Long id) {
 
-        return service.deleteUser(id);
+        return userService.deleteUser(id);
     }
 }

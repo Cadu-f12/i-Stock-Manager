@@ -1,71 +1,94 @@
 package com.istock.system.service;
 
+import com.istock.system.dtos.request.UserRequestDTO;
+import com.istock.system.dtos.response.UserResponseDTO;
 import com.istock.system.entities.User;
 import com.istock.system.exception.UserAlreadyExist;
 import com.istock.system.exception.UserNotFound;
 import com.istock.system.exception.UserNotFoundWithEmail;
+import com.istock.system.mapper.UserMapper;
 import com.istock.system.repository.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @Service
 public class UserService {
-    private final UserRepository repository;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repository, PasswordEncoder passwordEncoder) {
-        this.repository = repository;
+    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User getUser(Long id) {
-        User user = repository.findById(id)
-                .orElseThrow(() -> new UserNotFound(id));
-        return user;
+    public UserResponseDTO getUser(Long id) {
+        User user = userRepository.findById(id) .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "User not found"
+        ));
+        return userMapper.toResponseDTO(user);
     }
 
-    public List<User> getAllUsers() {
-        return repository.findAll();
+    public List<UserResponseDTO> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(userMapper::toResponseDTO)
+                .toList();
     }
 
-    public User createUser(User user) {
+    public UserResponseDTO createUser(UserRequestDTO dto) {
 
-        if (repository.findByEmail(user.getEmail()).isPresent()) {
+        User user = userMapper.toEntity(dto);
+
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new UserAlreadyExist(user);
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(dto.password()));
 
-        return repository.save(user);
+        user.setActive(true);
+
+        User savedUser = userRepository.save(user);
+
+        return userMapper.toResponseDTO(savedUser);
     }
 
-    public User fetchUser(String email) {
-        User user = repository.findByEmail(email)
+    public UserResponseDTO fetchUser(String email) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundWithEmail(email));
-        return user;
+        return userMapper.toResponseDTO(user);
     }
 
-    public User updateUser(Long id, User user) {
+    public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
 
-        User userResponse = repository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFound(id));
 
-        userResponse.setName(user.getName());
-        userResponse.setEmail(user.getEmail());
-        userResponse.setPassword(user.getPassword() );
+        user.setName(dto.name());
+        user.setEmail(dto.email());
+        user.setPassword(dto.password() );
 
-        return repository.save(userResponse);
+        User savedUser = userRepository.save(user);
+
+        return userMapper.toResponseDTO(savedUser);
     }
 
-        public User deleteUser(Long id) {
+        public UserResponseDTO deleteUser(Long id) {
 
-            User userResponse = repository.findById(id)
+            User user = userRepository.findById(id)
                     .orElseThrow(() -> new UserNotFound(id));
 
-            repository.delete(userResponse);
+            UserResponseDTO response = userMapper.toResponseDTO(user);
 
-            return userResponse;
+            userRepository.delete(user);
+
+            return response;
         }
 }
