@@ -82,6 +82,10 @@ public class Pastille {
         this.movements = movements;
     }
 
+    public boolean onAlert() {
+        return this.getCurrentBalance() <= this.getMinimumStockLevel() + 5;
+    }
+
     public Long getId() {
         return id;
     }

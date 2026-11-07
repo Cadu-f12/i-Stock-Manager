@@ -3,12 +3,11 @@ package com.istock.system.service;
 import com.istock.system.dtos.request.RegistryPastilleRequest;
 import com.istock.system.dtos.response.*;
 import com.istock.system.entities.Manufacturer;
-import com.istock.system.entities.Movement;
 import com.istock.system.entities.Pastille;
-import com.istock.system.entities.Supplier;
 import com.istock.system.exception.ManufacturerNotFound;
 import com.istock.system.exception.PastilleAlreadyExists;
 import com.istock.system.exception.PastilleNotFound;
+import com.istock.system.mapper.PastilleMapper;
 import com.istock.system.repository.ManufacturerRepository;
 import com.istock.system.repository.PastilleRepository;
 import org.springframework.stereotype.Service;
@@ -22,13 +21,16 @@ public class PastilleService {
 
     private final PastilleRepository pastilleRepository;
     private final ManufacturerRepository manufacturerRepository;
+    private final PastilleMapper mapper;
 
     public PastilleService(
             PastilleRepository pastilleRepository,
-            ManufacturerRepository manufacturerRepository
+            ManufacturerRepository manufacturerRepository,
+            PastilleMapper mapper
     ) {
         this.pastilleRepository = pastilleRepository;
         this.manufacturerRepository = manufacturerRepository;
+        this.mapper = mapper;
     }
 
     @Transactional(readOnly = true)
@@ -43,7 +45,7 @@ public class PastilleService {
 
         List<PastilleListDTO> pastilleList = new ArrayList<>();
         for (Pastille pastille : pastilles) {
-            pastilleList.add(toListDTO(pastille));
+            pastilleList.add(mapper.toListDTO(pastille));
         }
 
         return pastilleList;
@@ -72,7 +74,7 @@ public class PastilleService {
                 new ArrayList<>()
         ));
 
-        return toListDTO(pastille);
+        return mapper.toListDTO(pastille);
     }
 
     @Transactional(readOnly = true)
@@ -81,69 +83,8 @@ public class PastilleService {
                 .orElseThrow(() -> new PastilleNotFound(
                         "Pastille with ID '" + id + "' was not found."
                 ));
-        List<SupplierDTO> supplierDTOS = new ArrayList<>();
-        List<MovementDTO> movementDTOS = new ArrayList<>();
 
-        ManufacturerDTO manufacturerDTO = new ManufacturerDTO(
-                pastille.getManufacturer().getId(),
-                pastille.getManufacturer().getName(),
-                pastille.getManufacturer().getContact(),
-                pastille.getManufacturer().getActive()
-        );
-
-        for (Supplier supplier : pastille.getSuppliers()) {
-            supplierDTOS.add(new SupplierDTO(
-                    supplier.getId(),
-                    supplier.getName(),
-                    supplier.getContact(),
-                    supplier.getActive()
-            ));
-        }
-
-        for (Movement movement : pastille.getMovements()) {
-            UserDTO user = new UserDTO(
-                    movement.getUser().getId(),
-                    movement.getUser().getName()
-            );
-
-            ReasonMovementDTO reason = new ReasonMovementDTO(
-                    movement.getReasonMovement().getId(),
-                    movement.getReasonMovement().getDescription(),
-                    movement.getReasonMovement().getType()
-            );
-
-            movementDTOS.add(new MovementDTO(
-                    movement.getId(),
-                    movement.getQuantity(),
-                    movement.getDateTime(),
-                    reason,
-                    user
-            ));
-        }
-
-        return new PastilleDTO(
-                pastille.getId(),
-                pastille.getSkuCode(),
-                pastille.getDescription(),
-                new StockDTO(
-                        pastille.getMinimumStockLevel(),
-                        pastille.getCurrentBalance(),
-                        pastille.getCurrentBalance() <= pastille.getMinimumStockLevel() + 5
-                ),
-                manufacturerDTO,
-                supplierDTOS,
-                movementDTOS
-        );
+        return mapper.toDTO(pastille);
     }
 
-    private PastilleListDTO toListDTO(Pastille pastille) {
-        return new PastilleListDTO(
-                pastille.getId(),
-                pastille.getSkuCode(),
-                pastille.getDescription(),
-                pastille.getMinimumStockLevel(),
-                pastille.getCurrentBalance(),
-                pastille.getManufacturer().getName()
-        );
-    }
 }
