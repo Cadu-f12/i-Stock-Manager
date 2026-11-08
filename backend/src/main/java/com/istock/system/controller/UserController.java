@@ -38,11 +38,9 @@ public class UserController {
          return ResponseEntity
                  .status(HttpStatus.CREATED)
                  .body(response);
-
-
     }
 
-     @PostMapping("/fetchUser")
+    @PostMapping("/fetchUser")
     public UserResponseDTO fetchUser(@RequestBody UserRequestDTO dto) {
         return userService.fetchUser(dto.email());
     }
