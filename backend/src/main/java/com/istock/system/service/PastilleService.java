@@ -1,6 +1,7 @@
 package com.istock.system.service;
 
 import com.istock.system.dtos.request.RegistryPastilleRequest;
+import com.istock.system.dtos.request.UpdatePastilleRequest;
 import com.istock.system.dtos.response.*;
 import com.istock.system.entities.Manufacturer;
 import com.istock.system.entities.Pastille;
@@ -87,4 +88,21 @@ public class PastilleService {
         return mapper.toDTO(pastille);
     }
 
+    @Transactional
+    public PastilleDTO updateById(Long id, UpdatePastilleRequest pastilleRequest) {
+        Pastille pastille = pastilleRepository.findById(id)
+                .orElseThrow(() -> new PastilleNotFound(
+                        "Pastille with ID '" + id + "' was not found."
+                ));
+        Manufacturer manufacturer = manufacturerRepository.findById(pastilleRequest.manufacturerId())
+                .orElseThrow(() -> new ManufacturerNotFound(
+                        "Manufacturer with ID '" + pastilleRequest.manufacturerId() + "' was not found."
+                ));
+
+        pastille.setDescription(pastilleRequest.description());
+        pastille.setManufacturer(manufacturer);
+        pastille.setMinimumStockLevel(pastilleRequest.minimumStockLevel());
+
+        return mapper.toDTO(pastille);
+    }
 }

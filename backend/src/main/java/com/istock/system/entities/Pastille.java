@@ -2,7 +2,6 @@ package com.istock.system.entities;
 
 import jakarta.persistence.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -15,7 +14,7 @@ public class Pastille {
     @Column(name = "sku_code", nullable = false, unique = true, length = 30)
     private String skuCode;
 
-    @Column(name = "description", nullable = false, length = 255)
+    @Column(name = "description", length = 255)
     private String description;
 
     @Column(name = "minimum_stock_level", nullable = false, columnDefinition = "INT CHECK (minimum_stock_level >= 0)")

@@ -1,6 +1,7 @@
 package com.istock.system.controller;
 
 import com.istock.system.dtos.request.RegistryPastilleRequest;
+import com.istock.system.dtos.request.UpdatePastilleRequest;
 import com.istock.system.dtos.response.PastilleDTO;
 import com.istock.system.dtos.response.PastilleListDTO;
 import com.istock.system.service.PastilleService;
@@ -36,5 +37,10 @@ public class PastilleController {
     @GetMapping("/{id}")
     public ResponseEntity<PastilleDTO> findById(@PathVariable Long id) {
         return ResponseEntity.ok(pastilleService.findById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PastilleDTO> updateById(@PathVariable Long id, @RequestBody @Valid UpdatePastilleRequest pastilleRequest) {
+        return ResponseEntity.ok(pastilleService.updateById(id, pastilleRequest));
     }
 }
