@@ -17,11 +17,11 @@ import java.util.List;
 @Tag(name = "Users", description = "User account operations")
 public class UserController {
 
-    private final UserService service;
+    private final UserService userService;
 
     public UserController(UserService userService) {
-        this.service = userService;
-    }
+        this.userService = userService;
+     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get user by ID")
