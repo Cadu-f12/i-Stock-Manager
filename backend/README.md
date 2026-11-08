@@ -200,6 +200,7 @@ On Windows:
 ```
 
 The seed creates development data such as an administrator user, manufacturers, suppliers, movement reasons, and cutting inserts.
+Running the seed again restores the development administrator password to `admin` and activates that account. Restart the backend normally afterward and log in with `admin@istock.com` / `admin`.
 
 ---
 
@@ -217,3 +218,14 @@ Password: admin
 ```
 
 > **Note:** These credentials are intended exclusively for development and testing purposes.
+
+## API Documentation
+
+The API contract is available through OpenAPI and Swagger UI when the backend is running:
+
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+Authenticate with `POST /api/public/auth/login`, then use **Authorize** in Swagger UI and enter the returned access token. The UI adds the `Bearer` prefix automatically.
+
+The login request body is `{"email":"...","password":"..."}`. Copy only the `accessToken` value from the response into **Authorize** (do not include `Bearer `). After authorizing, Swagger UI sends it as `Authorization: Bearer <token>` on protected operations. The login route itself is public. Tokens expire after 15 minutes; log in again to obtain a new one.
