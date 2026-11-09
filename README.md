@@ -1,291 +1,64 @@
 # DDA Metalúrgica — I-Stock Manager
 
-> Academic software development project focused on improving the management of industrial cutting insert inventory used by **DDA Metalúrgica**, Santa Catarina, Brazil.
+**English** | [Português](README.pt-BR.md)
 
-**🇺🇸 English** | [🇧🇷 Português](README.pt-BR.md)
+I-Stock Manager is a web application for managing the industrial cutting insert inventory used by **DDA Metalúrgica**, in Santa Catarina, Brazil. It centralizes product balances and movement history to help employees keep inventory records up to date and support replenishment decisions.
 
-> Integração do frontend, autenticação JWT, execução e pendências: [guia do frontend](frontend/README.md).
+The project was created in an academic context at **SENAI/SC** by Carlos Eduardo, Eliot, Guilherme and Enrico. Its purpose is to improve a workflow based on spreadsheets and manual records, reducing errors and making stock information easier to consult.
 
----
+## Available features
 
-## Running with Docker Compose
+- Product and category registration, product editing and stock balance consultation.
+- Stock entries and withdrawals with an author and change history.
+- Search by name, ID or category; filters by category, last update date and stock availability.
+- Sorting and pages of 50, 100 or 200 products.
+- User administration and inventory reports for administrators.
 
-### 1. Prerequisites
+## Access and roles
 
-Install Docker Desktop (or Docker Engine with the Compose plugin on Linux) and start it. On Windows, use Linux containers. Run all commands below from the project root, where `compose.yaml` is located.
+Open the application address provided by whoever runs the system and sign in with your registered email and password. There is no public account registration. If the application has not been set up, the person responsible can follow [DESENVOLVIMENTO.md](DESENVOLVIMENTO.md).
 
-Java, Maven, Node.js and MySQL run inside the containers; they do not need to be installed on the host. Ports **5173**, **8080** and **3307** must be available. Stop any local Vite or Spring Boot instance using these ports.
+| Role | Available actions |
+| --- | --- |
+| Operator | View, register and edit products; record entries/withdrawals; manage categories and view history |
+| Admin | All inventory actions, plus user administration and reports |
 
-```sh
-docker version
-docker compose version
-```
+Use **Sair** to sign out. When your session expires, sign in again.
 
-### 2. Configure the environment
+## Using the application
 
-If `.env` does not exist, copy the example. Keep an existing `.env`:
+### Products and categories
 
-```powershell
-# Windows / PowerShell
-Copy-Item .env.example .env
-```
+In **Estoque**, choose **Nova categoria** to organize products, or use **Sem categoria**. Select **Novo produto**, enter a name, category and whole-number quantity, and save. Product names accept up to 120 characters; category names up to 60.
 
-```sh
-# Linux / macOS
-cp .env.example .env
-```
+Use the search and filters to find a product. Open its details to see the balance and history, or choose the edit action to update it. Deleting a category keeps its products and moves them to **Sem categoria**. The default category cannot be deleted.
 
-Fill in these values in `.env`:
+### Stock entries and withdrawals
 
-```dotenv
-MYSQL_DATABASE=istock
-MYSQL_ROOT_PASSWORD=replace_with_your_database_password
-JWT_SECRET=replace_with_a_generated_base64_key
-SPRING_PORT=8080
-REACT_PORT=5173
-```
+Use **+** on a product to register an entry and **−** to register a withdrawal. Enter a positive whole number and confirm. Stock cannot become negative or exceed 999999999 units. Each operation records the responsible user and appears in the product history.
 
-Generate the JWT key once, then copy the output into `JWT_SECRET`. It must decode to exactly 32 bytes. In PowerShell:
+If someone else has changed the product, reload the inventory before trying again. Review the new balance before submitting the operation again.
 
-```powershell
-$bytes = New-Object byte[] 32
-$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
-[Convert]::ToBase64String($bytes)
-```
+### Users
 
-On Linux/macOS with OpenSSL:
+As Admin, open **Usuários** to create, view, edit, activate, deactivate or delete accounts. Choose the user's role and status. New passwords require at least 8 characters and at most 72 UTF-8 bytes; leaving the password empty while editing keeps the existing one.
 
-```sh
-openssl rand -base64 32
-```
+You cannot delete or deactivate your own account or remove your own Admin role through this screen. If deletion is blocked by linked records, deactivate the account instead.
 
-Keep `.env` private and reuse the same key between restarts. For an existing `mysql_data` directory, use the database password originally configured; changing the environment variable does not change the stored MySQL password.
+### Reports
 
-### 3. Start the system
+As Admin, open **Relatórios**. The category chart counts products, including those with zero stock. Monthly totals count units from explicit stock entries and withdrawals, grouped by São Paulo time. Use the year, category and product filters to narrow the monthly view.
 
-```sh
-docker compose config --quiet
-docker compose up -d --build --wait --wait-timeout 240
-```
+Creating a product or directly editing its quantity does not count as an entry or withdrawal in the monthly chart. Category filters reflect each product's current category.
 
-Compose starts MySQL, waits for it to be ready, then starts the API and frontend. The first build downloads dependencies and may take several minutes. The services run in the background, so the terminal can be closed.
+## Current limitations and help
 
-Open **http://127.0.0.1:5173**. Initial development login:
+- Minimum stock alerts, manufacturers, suppliers and movement reasons are not integrated into the current screens.
+- There is no product deletion or report export in the interface.
+- Initial sample cutting inserts from the older inventory model do not appear in the current inventory. Register products through **Estoque**.
+- If the server is unavailable, contact whoever runs the application. If a save conflicts with another change, reload the inventory; if the session expires, sign in again.
 
-- Email: **admin@istock.com**
-- Password: **admin**
+## Other documentation
 
-The development seed runs on startup and preserves existing accounts. If the password was changed, use the current one. To disable the seed, add `BACKEND_ARGUMENTS=` to `.env`.
-
-The frontend proxies `/api` to `backend:8080`; the API connects to `db:3306`. These internal addresses are fixed by Compose. `MYSQL_HOST`, `MYSQL_PORT` and `MYSQL_ROOT_USERNAME` from older environment files are not used by Compose. `SPRING_PORT` and `REACT_PORT` control host ports; MySQL is exposed at `127.0.0.1:3307`.
-
-### 4. Check, stop and start again
-
-```sh
-docker compose ps
-docker compose logs -f backend
-docker compose logs -f frontend
-docker compose down
-```
-
-All three services should show `healthy`. Ctrl+C stops log viewing only. `docker compose down` stops the system and preserves MySQL data in `mysql_data`.
-
-To start again or rebuild after code/dependency changes:
-
-```sh
-docker compose up -d --build --wait --wait-timeout 240
-```
-
-The standalone H2 database in `backend/.local` is separate and is not migrated into MySQL. This Compose setup is for development and mounts the project source into the containers.
-
-If startup fails, run `docker compose logs --tail 100 db backend frontend`. A port conflict requires stopping the application using that port; an invalid JWT key requires a Base64 key containing 32 bytes. If startup only exceeded the wait timeout, inspect the logs and run `docker compose up -d --wait --wait-timeout 240` again.
-
----
-
-## 📌 About the Project
-
-The **DDA Metalúrgica Inventory Management System** is a web application being developed to improve the management of industrial cutting inserts used in the company's machining and manufacturing processes.
-
-Currently, DDA Metalúrgica manages its cutting insert inventory through **spreadsheets and manual data entry**. This approach makes it difficult to maintain accurate and up-to-date information, increases the possibility of human error, and can delay the identification of materials that need to be replenished.
-
-The proposed solution aims to centralize inventory information in a single system, allowing employees to register, monitor, and track inventory movements more efficiently.
-
-The project is being developed as part of an academic project at **SENAI/SC — Fraiburgo**.
-
----
-
-## 🎯 Problem
-
-DDA Metalúrgica uses several types of industrial cutting inserts, each designed for specific machining applications.
-
-Because these materials are essential to the production process and can have significant consumption, maintaining accurate inventory information is critical.
-
-The current spreadsheet-based process presents several challenges:
-
-* Manual registration of inventory movements.
-* Increased risk of human errors.
-* Difficulty keeping inventory information up to date.
-* Limited visibility of current stock levels.
-* Difficulty identifying materials approaching critical stock levels.
-* Delays in identifying replenishment needs.
-* Lack of centralized movement history.
-* Difficulty generating reliable consumption and inventory reports.
-
-These problems can potentially lead to **material shortages and interruptions in production**.
-
----
-
-## 💡 Proposed Solution
-
-The proposed solution is a **web-based inventory management system** designed specifically for managing industrial cutting inserts.
-
-The system will centralize inventory data and provide tools for controlling material entries and exits, monitoring minimum stock levels, tracking historical movements, and supporting purchasing decisions.
-
-The application is intended to provide a simple and intuitive interface that allows employees and inventory managers to quickly access reliable information about the current state of the inventory.
-
----
-
-## 🏗️ System Architecture
-
-The initial architecture is planned around a **web application** using a separated frontend and backend.
-
-```text
-┌─────────────────────────────┐
-│          Frontend           │
-│          React + Vite       │
-└──────────────┬──────────────┘
-               │
-               │ HTTP / REST API
-               ▼
-┌─────────────────────────────┐
-│           Backend           │
-│       Java + Spring Boot    │
-└──────────────┬──────────────┘
-               │
-               │ Data Access
-               ▼
-┌─────────────────────────────┐
-│          Database           │
-│         MySQL               │
-└─────────────────────────────┘
-```
-
-This architecture allows the frontend and backend to evolve independently while communicating through a RESTful API.
-
----
-
-## 🛠️ Technologies
-
-The initial technology stack planned for the project is:
-
-### Backend
-
-* **Java**
-* **Spring Boot**
-* **Spring Data JPA**
-* **Spring Security**
-* **Hibernate**
-* **REST API**
-
-### Frontend
-
-* **Angular**
-* **TypeScript**
-* **HTML**
-* **CSS**
-
-### Database
-
-* **MySQL**
-
-### Development Tools
-
-* **Git**
-* **GitHub**
-* **Maven**
-
----
-
-## 🎓 Academic Context
-
-This project is being developed as an **academic software engineering project** at:
-
-**SENAI/SC — Florianópolis, Santa Catarina, Brazil**
-
-The project provides an opportunity to apply software development concepts to a real-world business problem, including:
-
-* Requirements analysis.
-* Software architecture.
-* Database modeling.
-* Backend development.
-* Frontend development.
-* REST API development.
-* Authentication and authorization.
-* Version control.
-* Testing.
-* Software documentation.
-
----
-
-## 📂 Project Structure
-
-The project is organized as a **full-stack application**, separating the backend and frontend into independent directories.
-
-```text
-i-Stock-Manager/
-│
-├── backend/                    # Application backend
-│   ├── pom.xml                # Maven configuration and dependencies
-│   │
-│   └── src/
-│       ├── main/
-│       │   ├── java/          # Application source code
-│       │   │   └── ...
-│       │   │
-│       │   └── resources/     # Configuration files and resources
-│       │       └── ...
-│       │
-│       └── test/
-│           └── java/          # Automated tests
-│               └── ...
-│
-├── frontend/                   # Application frontend
-│   ├── package.json            # Project dependencies and scripts
-│   ├── vite.config.ts          # Vite configuration
-│   ├── tsconfig.json           # TypeScript configuration
-│   │
-│   └── src/
-│       └── ...                 # User interface source code
-│
-├── mysql_data/                 # Data of mysql volume (Do not remove!)
-│
-├── compose.yaml                # Docker compose file to containers
-│
-├── .env                        # Your environment variables
-├── .env.example                # Keys of variables
-│ 
-└── README.md
-```
-
-The frontend structure and the overall repository organization will be defined as the project architecture evolves.
-
----
-
-## 👥 Development Team
-
-This project is being developed collaboratively by students from **SENAI/SC — Fraiburgo**.
-
-### Team Members
-
-* **Carlos Eduardo**
-* **Eliot**
-* **Guilherme**
-* **Enrico**
-
----
-
-## 🌐 Documentation
-
-* 🇺🇸 **English** — `README.md`
-* 🇧🇷 **Português** — [`README.pt-BR.md`](README.pt-BR.md)
+- [DESENVOLVIMENTO.md](DESENVOLVIMENTO.md): environment setup, Docker, local execution, configuration, architecture, APIs, tests and builds.
+- [AGENTS.md](AGENTS.md): project purpose, scope, maintenance references and rules for AI agents.
