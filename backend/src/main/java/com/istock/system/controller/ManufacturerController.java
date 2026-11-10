@@ -40,8 +40,8 @@ public class ManufacturerController {
     }
 
     @PostMapping("/fetchManufacturer")
-    public ManufacturerResponseDTO fetchUser(@RequestBody UserRequestDTO dto) {
-        return manufacturerService.fetchManufacturer(dto.email());
+    public ManufacturerResponseDTO fetchUser(@RequestBody ManufacturerRequestDTO dto) {
+        return manufacturerService.fetchManufacturer(dto.name());
     }
 
     @PutMapping("/updateManufacturer/{id}")
