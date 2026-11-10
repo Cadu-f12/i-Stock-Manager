@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 public record MovementDTO(
         Long id,
         PastilleDTO pastille,
-        UserDTO user,
+        UserResponseDTO user,
         @JsonProperty("reason_movement")
         ReasonMovementDTO reasonMovement,
         Integer quantity,
