@@ -36,7 +36,7 @@ public class JwtAuthenticationEntryPoint
         ApiError error = new ApiError(
                 401,
                 "UNAUTHORIZED",
-                "Autenticação necessária ou token inválido."
+                "Authentication is required or the token is invalid."
         );
 
         response.getWriter().write(

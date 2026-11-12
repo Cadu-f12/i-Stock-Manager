@@ -35,7 +35,7 @@ public class ApiAccessDeniedHandler implements AccessDeniedHandler {
         ApiError error = new ApiError(
                 403,
                 "FORBIDDEN",
-                "Você não possui permissão para acessar este recurso."
+                "You do not have permission to access this resource."
         );
 
         response.getWriter().write(
