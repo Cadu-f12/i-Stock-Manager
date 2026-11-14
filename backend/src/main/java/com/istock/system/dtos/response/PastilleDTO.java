@@ -1,6 +1,7 @@
 package com.istock.system.dtos.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public record PastilleDTO(
@@ -9,7 +10,7 @@ public record PastilleDTO(
         String skuCode,
         String description,
         StockDTO stock,
-        ManufacturerDTO manufacturer,
-        List<SupplierDTO> suppliers,
+        ManufacturerResponseDTO manufacturer,
+        List<SupplierResponseDTO> suppliers,
         List<MovementDTO> movements
 ) {}
