@@ -9,5 +9,5 @@ public record UserResponseDTO(
         String name,
         String email,
         Boolean isActive,
-        List<Movement> movement
+        List<MovementDTO> movement
 ) {}

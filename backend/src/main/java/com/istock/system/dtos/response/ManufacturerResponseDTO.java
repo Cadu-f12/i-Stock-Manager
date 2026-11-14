@@ -9,5 +9,5 @@
             String name,
             String contact,
             Boolean isActive,
-            List<Pastille> pastilles
+            List<PastilleListDTO> pastilles
     ) {}

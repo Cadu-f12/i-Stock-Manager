@@ -1,9 +1,12 @@
 package com.istock.system.mapper;
 
 import com.istock.system.dtos.request.UserRequestDTO;
-import com.istock.system.dtos.response.UserResponseDTO;
+import com.istock.system.dtos.response.*;
+import com.istock.system.entities.Movement;
 import com.istock.system.entities.User;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class UserMapper {
@@ -26,7 +29,38 @@ public class UserMapper {
                 user.getName(),
                 user.getEmail(),
                 user.getActive(),
-                user.getMovements()
+                toMovementList(user.getMovements())
         );
+    }
+
+    private List<MovementDTO> toMovementList(List<Movement> movements) {
+
+        if (movements == null) {
+            return List.of();
+        }
+
+        return movements.stream()
+                .map(movement -> {
+
+                    UserDTO userDTO = new UserDTO(
+                            movement.getUser().getId(),
+                            movement.getUser().getName()
+                    );
+
+                    ReasonMovementDTO reasonDTO = new ReasonMovementDTO(
+                            movement.getReasonMovement().getId(),
+                            movement.getReasonMovement().getDescription(),
+                            movement.getReasonMovement().getType()
+                    );
+
+                    return new MovementDTO(
+                            movement.getId(),
+                            movement.getQuantity(),
+                            movement.getDateTime(),
+                            reasonDTO,
+                            userDTO
+                    );
+                })
+                .toList();
     }
 }

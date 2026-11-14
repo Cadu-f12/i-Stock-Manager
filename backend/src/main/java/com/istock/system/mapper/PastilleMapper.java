@@ -7,7 +7,6 @@ import com.istock.system.entities.Pastille;
 import com.istock.system.entities.Supplier;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -20,13 +19,13 @@ public class PastilleMapper {
                 pastille.getDescription(),
                 pastille.getMinimumStockLevel(),
                 pastille.getCurrentBalance(),
-                pastille.getManufacturer().getName()
+                pastille.getManufacturer() != null
+                        ? pastille.getManufacturer().getName()
+                        : null
         );
     }
 
-    public PastilleDTO toDTO(
-            Pastille pastille
-    ) {
+    public PastilleDTO toDTO(Pastille pastille) {
         return new PastilleDTO(
                 pastille.getId(),
                 pastille.getSkuCode(),
@@ -36,60 +35,58 @@ public class PastilleMapper {
                         pastille.getCurrentBalance(),
                         pastille.onAlert()
                 ),
-                this.toManufacturerDTO(pastille.getManufacturer()),
-                this.toSupplierListDTO(pastille.getSuppliers()),
-                this.toMovementList(pastille.getMovements())
+                toManufacturerDTO(pastille.getManufacturer()),
+                toSupplierListDTO(pastille.getSuppliers()),
+                toMovementList(pastille.getMovements())
         );
     }
 
-    private ManufacturerDTO toManufacturerDTO(Manufacturer manufacturer) {
-        return new ManufacturerDTO(
+    private ManufacturerResponseDTO toManufacturerDTO(Manufacturer manufacturer) {
+        if (manufacturer == null) {
+            return null;
+        }
+
+        return new ManufacturerResponseDTO(
                 manufacturer.getId(),
                 manufacturer.getName(),
                 manufacturer.getContact(),
-                manufacturer.getActive()
+                manufacturer.getActive(),
+                manufacturer.getPastilles().stream()
+                        .map(this::toListDTO)
+                        .toList()
         );
     }
 
-    private List<SupplierDTO> toSupplierListDTO(List<Supplier> suppliers) {
-        List<SupplierDTO> supplierDTOS = new ArrayList<>();
-
-        for (Supplier supplier : suppliers) {
-            supplierDTOS.add(new SupplierDTO(
-                    supplier.getId(),
-                    supplier.getName(),
-                    supplier.getContact(),
-                    supplier.getActive()
-            ));
-        }
-
-        return supplierDTOS;
+    private List<SupplierResponseDTO> toSupplierListDTO(List<Supplier> suppliers) {
+        return suppliers.stream()
+                .map(supplier -> new SupplierResponseDTO(
+                        supplier.getId(),
+                        supplier.getName(),
+                        supplier.getContact(),
+                        supplier.getActive(),
+                        supplier.getPastilles().stream()
+                                .map(this::toListDTO)
+                                .toList()
+                ))
+                .toList();
     }
 
     private List<MovementDTO> toMovementList(List<Movement> movements) {
-        List<MovementDTO> movementDTOS = new ArrayList<>();
-
-        for (Movement movement : movements) {
-            UserDTO user = new UserDTO(
-                    movement.getUser().getId(),
-                    movement.getUser().getName()
-            );
-
-            ReasonMovementDTO reason = new ReasonMovementDTO(
-                    movement.getReasonMovement().getId(),
-                    movement.getReasonMovement().getDescription(),
-                    movement.getReasonMovement().getType()
-            );
-
-            movementDTOS.add(new MovementDTO(
-                    movement.getId(),
-                    movement.getQuantity(),
-                    movement.getDateTime(),
-                    reason,
-                    user
-            ));
-        }
-
-        return movementDTOS;
+        return movements.stream()
+                .map(movement -> new MovementDTO(
+                        movement.getId(),
+                        movement.getQuantity(),
+                        movement.getDateTime(),
+                        new ReasonMovementDTO(
+                                movement.getReasonMovement().getId(),
+                                movement.getReasonMovement().getDescription(),
+                                movement.getReasonMovement().getType()
+                        ),
+                        new UserDTO(
+                                movement.getUser().getId(),
+                                movement.getUser().getName()
+                        )
+                ))
+                .toList();
     }
 }
