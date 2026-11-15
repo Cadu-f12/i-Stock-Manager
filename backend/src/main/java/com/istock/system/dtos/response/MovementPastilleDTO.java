@@ -1,9 +1,10 @@
 package com.istock.system.dtos.response;
 
-import com.istock.system.entities.MovementType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record MovementPastilleDTO(
         Long id,
-        String description,
-        MovementType type
+        @JsonProperty("sku_code")
+        String skuCode,
+        String description
 ) {}
