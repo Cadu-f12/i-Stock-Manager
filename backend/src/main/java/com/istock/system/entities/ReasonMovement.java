@@ -39,6 +39,11 @@ public class ReasonMovement {
         this.isActive = isActive;
         this.movements = movements;
     }
+    public ReasonMovement(Boolean isActive, MovementType type, String description) {
+        this.isActive = isActive;
+        this.type = type;
+        this.description = description;
+    }
 
     public Long getId() {
         return id;

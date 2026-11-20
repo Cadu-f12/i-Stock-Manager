@@ -1,11 +1,13 @@
 package com.istock.system.controller;
 
+import com.istock.system.dtos.request.RegisterMovementRequest;
 import com.istock.system.dtos.response.MovementResponseDTO;
 import com.istock.system.service.MovementService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,5 +24,10 @@ public class MovementsController {
     @GetMapping
     public ResponseEntity<List<MovementResponseDTO>> findAll() {
         return ResponseEntity.ok(movementService.findAll());
+    }
+
+    @PostMapping
+    public ResponseEntity<MovementResponseDTO> registerMovement(@RequestBody @Valid RegisterMovementRequest request, Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(movementService.registerMovement(request, authentication));
     }
 }
