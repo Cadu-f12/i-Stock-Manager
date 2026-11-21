@@ -13,9 +13,14 @@ import com.istock.system.repository.SupplierRepository;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class SupplierService {
@@ -53,15 +58,19 @@ public class SupplierService {
                 .toList();
     }
 
+    @Transactional
     public SupplierResponseDTO createSupplier(SupplierRequestDTO dto) {
 
         Supplier supplier = supplierMapper.toEntity(dto);
+        List<Pastille> pastilles = findPastilles(dto.pastilles());
 
         supplier.setActive(true);
-
-        supplier.setPastilles(findPastilles(dto.pastilles()));
+        supplier.setPastilles(pastilles);
 
         Supplier savedSupplier = supplierRepository.save(supplier);
+
+        addSupplierToPastilles(pastilles, savedSupplier);
+        pastilleRepository.saveAll(pastilles);
 
         return supplierMapper.toResponseDTO(savedSupplier);
     }
@@ -74,17 +83,26 @@ public class SupplierService {
         return supplierMapper.toResponseDTO(supplier);
     }
 
+    @Transactional
     public SupplierResponseDTO updateSupplier(Long id, SupplierRequestDTO dto) {
 
         Supplier supplier = supplierRepository.findById(id)
                 .orElseThrow(() -> new UserNotFound(id));
+        List<Pastille> previousPastilles = new ArrayList<>(supplier.getPastilles());
+        List<Pastille> pastilles = findPastilles(dto.pastilles());
 
         supplier.setName(dto.name());
         supplier.setContact(dto.contact());
-
-        supplier.setPastilles(findPastilles(dto.pastilles()));
+        supplier.setPastilles(pastilles);
 
         Supplier savedSupplier = supplierRepository.save(supplier);
+
+        removeSupplierFromPastilles(previousPastilles, savedSupplier);
+        addSupplierToPastilles(pastilles, savedSupplier);
+
+        Set<Pastille> affectedPastilles = new LinkedHashSet<>(previousPastilles);
+        affectedPastilles.addAll(pastilles);
+        pastilleRepository.saveAll(affectedPastilles);
 
         return supplierMapper.toResponseDTO(savedSupplier);
     }
@@ -121,5 +139,31 @@ public class SupplierService {
         }
 
         return pastilles;
+    }
+
+    private void addSupplierToPastilles(List<Pastille> pastilles, Supplier supplier) {
+        for (Pastille pastille : pastilles) {
+            List<Supplier> suppliers = pastille.getSuppliers();
+            if (suppliers == null) {
+                suppliers = new ArrayList<>();
+                pastille.setSuppliers(suppliers);
+            }
+
+            boolean isAlreadyAssigned = suppliers.stream()
+                    .anyMatch(existingSupplier -> Objects.equals(existingSupplier.getId(), supplier.getId()));
+            if (!isAlreadyAssigned) {
+                suppliers.add(supplier);
+            }
+        }
+    }
+
+    private void removeSupplierFromPastilles(List<Pastille> pastilles, Supplier supplier) {
+        for (Pastille pastille : pastilles) {
+            List<Supplier> suppliers = pastille.getSuppliers();
+            if (suppliers != null) {
+                suppliers.removeIf(existingSupplier ->
+                        Objects.equals(existingSupplier.getId(), supplier.getId()));
+            }
+        }
     }
 }
