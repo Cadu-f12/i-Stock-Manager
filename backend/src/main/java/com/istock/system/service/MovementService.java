@@ -1,7 +1,6 @@
 package com.istock.system.service;
 
 import com.istock.system.dtos.request.RegisterMovementRequest;
-import com.istock.system.dtos.response.MovementReasonDTO;
 import com.istock.system.dtos.response.MovementResponseDTO;
 import com.istock.system.entities.Movement;
 import com.istock.system.entities.MovementType;
@@ -9,6 +8,8 @@ import com.istock.system.entities.Pastille;
 import com.istock.system.entities.ReasonMovement;
 import com.istock.system.entities.User;
 import com.istock.system.exception.InsufficientStockException;
+import com.istock.system.exception.InvalidMovementDateRangeException;
+import com.istock.system.exception.MovementNotFound;
 import com.istock.system.exception.PastilleNotFound;
 import com.istock.system.exception.ReasonMovementNotFound;
 import com.istock.system.exception.UserNotFoundWithEmail;
@@ -21,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -42,15 +44,34 @@ public class MovementService {
     }
 
     @Transactional(readOnly = true)
-    public List<MovementResponseDTO> findAll() {
-        return mapper.toResponseDTO(movementRepository.findAll());
+    public List<MovementResponseDTO> findAll(
+            Long pastilleId,
+            Long userId,
+            MovementType type,
+            LocalDate from,
+            LocalDate to
+    ) {
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new InvalidMovementDateRangeException("The 'from' date must be on or before the 'to' date.");
+        }
+
+        LocalDateTime startDateTime = from == null ? null : from.atStartOfDay();
+        LocalDateTime endDateTimeExclusive = to == null ? null : to.plusDays(1).atStartOfDay();
+
+        return mapper.toResponseDTO(movementRepository.findByFilters(
+                pastilleId,
+                userId,
+                type,
+                startDateTime,
+                endDateTimeExclusive
+        ));
     }
 
     @Transactional(readOnly = true)
-    public List<MovementReasonDTO> findActiveReasons() {
-        return reasonMovementRepository.findAllActive().stream()
-                .map(mapper::toMovementReasonDTO)
-                .toList();
+    public MovementResponseDTO findById(Long id) {
+        Movement movement = movementRepository.findById(id)
+                .orElseThrow(() -> new MovementNotFound("Movement with ID '" + id + "' was not found."));
+        return mapper.toMovementResponseDTO(movement);
     }
 
     @Transactional
