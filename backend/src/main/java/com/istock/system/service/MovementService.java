@@ -1,13 +1,16 @@
 package com.istock.system.service;
 
 import com.istock.system.dtos.request.RegisterMovementRequest;
+import com.istock.system.dtos.response.MovementReasonDTO;
 import com.istock.system.dtos.response.MovementResponseDTO;
 import com.istock.system.entities.Movement;
+import com.istock.system.entities.MovementType;
 import com.istock.system.entities.Pastille;
 import com.istock.system.entities.ReasonMovement;
 import com.istock.system.entities.User;
+import com.istock.system.exception.InsufficientStockException;
 import com.istock.system.exception.PastilleNotFound;
-import com.istock.system.exception.UserNotFound;
+import com.istock.system.exception.ReasonMovementNotFound;
 import com.istock.system.exception.UserNotFoundWithEmail;
 import com.istock.system.mapper.MovementMapper;
 import com.istock.system.repository.MovementRepository;
@@ -43,18 +46,37 @@ public class MovementService {
         return mapper.toResponseDTO(movementRepository.findAll());
     }
 
+    @Transactional(readOnly = true)
+    public List<MovementReasonDTO> findActiveReasons() {
+        return reasonMovementRepository.findAllActive().stream()
+                .map(mapper::toMovementReasonDTO)
+                .toList();
+    }
+
     @Transactional
     public MovementResponseDTO registerMovement(RegisterMovementRequest request, Authentication authentication) {
-        Pastille pastille = pastilleRepository.findById(request.pastille())
-            .orElseThrow(() -> new PastilleNotFound("")); //TODO: Create a 404 error here
+        Pastille pastille = pastilleRepository.findByIdForUpdate(request.pastille())
+                .orElseThrow(() -> new PastilleNotFound(
+                        "Pastille with ID '" + request.pastille() + "' was not found."
+                ));
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new UserNotFoundWithEmail(authentication.getName()));
+        ReasonMovement reason = reasonMovementRepository.findActiveById(request.reasonMovementId())
+                .orElseThrow(() -> new ReasonMovementNotFound(
+                        "Active movement reason with ID '" + request.reasonMovementId() + "' was not found."
+                ));
 
-        ReasonMovement reason = new ReasonMovement(
-                Boolean.TRUE,
-                request.type(),
-                request.description()
-        );
+        if (reason.getType().equals(MovementType.IN)) {
+            pastille.increaseBalance(request.quantity());
+        } else {
+            if (request.quantity() > pastille.getCurrentBalance()) {
+                throw new InsufficientStockException(
+                        "Requested quantity exceeds available stock for pastille " + pastille.getId() + "."
+                );
+            }
+            pastille.decreaseBalance(request.quantity());
+        }
+
         Movement movement = new Movement(
                 pastille,
                 user,
@@ -63,7 +85,6 @@ public class MovementService {
                 LocalDateTime.now()
          );
 
-        reason = reasonMovementRepository.save(reason);
         movement = movementRepository.save(movement);
 
         return mapper.toMovementResponseDTO(movement);

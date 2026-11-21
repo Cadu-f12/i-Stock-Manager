@@ -67,6 +67,17 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ApiError> handleInsufficientStock(InsufficientStockException ex) {
+        ApiError error = new ApiError(
+                HttpStatus.CONFLICT.value(),
+                "INSUFFICIENT_STOCK",
+                ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
     @ExceptionHandler(ManufacturerNotFound.class)
     public ResponseEntity<ApiError> handleManufacturerNotFound(ManufacturerNotFound ex) {
         ApiError error = new ApiError(
@@ -85,6 +96,17 @@ public class GlobalExceptionHandler {
         ApiError error = new ApiError(
                 HttpStatus.NOT_FOUND.value(),
                 "PASTILLE_NOT_FOUND",
+                ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(ReasonMovementNotFound.class)
+    public ResponseEntity<ApiError> handleReasonMovementNotFound(ReasonMovementNotFound ex) {
+        ApiError error = new ApiError(
+                HttpStatus.NOT_FOUND.value(),
+                "REASON_MOVEMENT_NOT_FOUND",
                 ex.getMessage()
         );
 

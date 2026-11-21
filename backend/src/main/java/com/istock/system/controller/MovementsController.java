@@ -2,6 +2,7 @@ package com.istock.system.controller;
 
 import com.istock.system.dtos.request.RegisterMovementRequest;
 import com.istock.system.dtos.response.MovementResponseDTO;
+import com.istock.system.dtos.response.MovementReasonDTO;
 import com.istock.system.service.MovementService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,11 @@ public class MovementsController {
     @GetMapping
     public ResponseEntity<List<MovementResponseDTO>> findAll() {
         return ResponseEntity.ok(movementService.findAll());
+    }
+
+    @GetMapping("/reasons")
+    public ResponseEntity<List<MovementReasonDTO>> findActiveReasons() {
+        return ResponseEntity.ok(movementService.findActiveReasons());
     }
 
     @PostMapping

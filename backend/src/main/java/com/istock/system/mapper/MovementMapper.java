@@ -6,6 +6,7 @@ import com.istock.system.dtos.response.MovementReasonDTO;
 import com.istock.system.dtos.response.MovementResponseDTO;
 import com.istock.system.dtos.response.MovementUserDTO;
 import com.istock.system.entities.Movement;
+import com.istock.system.entities.ReasonMovement;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -30,11 +31,7 @@ public class MovementMapper {
                 movement.getPastille().getSkuCode(),
                 movement.getPastille().getDescription()
         );
-        MovementReasonDTO reason = new MovementReasonDTO(
-                movement.getReasonMovement().getId(),
-                movement.getReasonMovement().getDescription(),
-                movement.getReasonMovement().getType()
-        );
+        MovementReasonDTO reason = toMovementReasonDTO(movement.getReasonMovement());
         MovementUserDTO user = new MovementUserDTO(
                 movement.getUser().getId(),
                 movement.getUser().getName()
@@ -47,6 +44,14 @@ public class MovementMapper {
                 pastille,
                 reason,
                 user
+        );
+    }
+
+    public MovementReasonDTO toMovementReasonDTO(ReasonMovement reasonMovement) {
+        return new MovementReasonDTO(
+                reasonMovement.getId(),
+                reasonMovement.getDescription(),
+                reasonMovement.getType()
         );
     }
 }
