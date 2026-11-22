@@ -1,5 +1,6 @@
 package com.istock.system.entities;
 
+import com.istock.system.dtos.response.PastilleDTO;
 import jakarta.persistence.*;
 
 import java.util.List;

@@ -9,11 +9,8 @@ public record PastilleDTO(
         @JsonProperty("sku_code")
         String skuCode,
         String description,
-        @JsonProperty("minimum_stock_level")
-        Integer minimumStockLevel,
-        @JsonProperty("current_balance")
-        Integer  currentBalance,
-        ManufacturerDTO manufacturer,
-        List<SupplierDTO> suppliers,
+        StockDTO stock,
+        ManufacturerResponseDTO manufacturer,
+        List<SupplierResponseDTO> suppliers,
         List<MovementDTO> movements
 ) {}

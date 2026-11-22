@@ -9,14 +9,25 @@ export class ApiError extends Error {
 }
 
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
+  return request<T>(`/api${path}`, options)
+}
+
+type DomainResource = '/pastilles' | '/movement' | '/manufacturer' | '/supplier'
+type DomainPath = DomainResource | `${DomainResource}/${string}` | `${DomainResource}?${string}`
+
+export function domainApi<T>(path: DomainPath, options: RequestInit = {}): Promise<T> {
+  return request<T>(path, options)
+}
+
+async function request<T>(path: string, options: RequestInit): Promise<T> {
   const headers = new Headers(options.headers)
   const token = getAccessToken()
-  const isLogin = path === '/public/auth/login'
+  const isLogin = path === '/api/public/auth/login'
   if (token && !isLogin) headers.set('Authorization', `Bearer ${token}`)
   if (options.body) headers.set('Content-Type', 'application/json')
   let response: Response
   try {
-    response = await fetch(`/api${path}`, { ...options, headers, credentials: 'omit' })
+    response = await fetch(path, { ...options, headers, credentials: 'omit' })
   } catch {
     throw new Error('Não foi possível conectar ao servidor. Verifique se o backend está disponível.')
   }

@@ -8,9 +8,9 @@ O projeto nasceu no contexto acadêmico do **SENAI/SC**, desenvolvido por Carlos
 
 ## Funcionalidades disponíveis
 
-- Cadastro de produtos e categorias, edição de produtos e consulta de saldos.
+- Cadastro de pastilhas por SKU, estoque mínimo e fabricante.
 - Entradas e saídas de estoque com identificação do responsável e histórico de alterações.
-- Pesquisa por nome, ID ou categoria; filtros por categoria, data de atualização e disponibilidade.
+- Pesquisa por ID, SKU, descrição ou fabricante e filtros de alerta e disponibilidade.
 - Ordenação e paginação de 50, 100 ou 200 produtos.
 - Administração de usuários e relatórios de estoque para administradores.
 
@@ -20,24 +20,18 @@ Abra o endereço fornecido pelo responsável pela aplicação e entre com seu e-
 
 | Perfil | Ações disponíveis |
 | --- | --- |
-| Operator | Consultar, cadastrar e editar produtos; registrar entradas/saídas; gerenciar categorias e consultar histórico |
+| Operator | Consultar, cadastrar e editar produtos; registrar entradas/saídas; gerenciar fabricantes e fornecedores e consultar histórico |
 | Admin | Todas as ações de estoque, além de administração de usuários e relatórios |
 
 Use **Sair** para encerrar o acesso. Quando a sessão expirar, entre novamente.
 
 ## Usar a aplicação
 
-### Produtos e categorias
+### Pastilhas e movimentações
 
-Em **Estoque**, escolha **Nova categoria** para organizar os produtos ou mantenha **Sem categoria**. Selecione **Novo produto**, informe nome, categoria e quantidade inteira e salve. Nomes de produto aceitam até 120 caracteres; categorias, até 60.
+Em **Produtos**, selecione **Nova pastilha** e informe SKU, fabricante e estoque mínimo. Marque os fornecedores cadastrados que atendem a pastilha. Os nomes aparecem na tabela de estoque. Use a busca, os filtros, a ordenação e a paginação para localizar o item. As seções **Fabricantes** e **Fornecedores** permitem manter os contatos.
 
-Use a pesquisa e os filtros para localizar um produto. Abra os detalhes para consultar saldo e histórico ou selecione a ação de edição para atualizá-lo. Excluir uma categoria preserva seus produtos e os move para **Sem categoria**. A categoria padrão não pode ser excluída.
-
-### Entradas e saídas
-
-Use **+** no produto para registrar uma entrada e **−** para registrar uma saída. Informe uma quantidade inteira positiva e confirme. O saldo não pode ficar negativo nem superar 999999999 unidades. Cada operação registra o responsável e aparece no histórico do produto.
-
-Se outra pessoa já tiver alterado o produto, recarregue o estoque antes de tentar novamente. Confira o novo saldo antes de repetir a operação.
+O cadastro inicia com saldo zero. Use **+** ou **−**, selecione o motivo e informe a quantidade. Consulte o responsável e a data em **Histórico**. O filtro de alerta inclui saldos até cinco unidades acima do mínimo.
 
 ### Usuários
 
@@ -47,15 +41,14 @@ Você não pode excluir ou desativar sua própria conta nem remover seu próprio
 
 ### Relatórios
 
-Como Admin, abra **Relatórios**. O gráfico por categoria conta produtos, inclusive aqueles com saldo zero. Os totais mensais somam unidades de entradas e saídas explícitas, agrupadas pelo horário de São Paulo. Use os filtros de ano, categoria e produto para restringir a visão mensal.
+Como Admin, abra **Relatórios anteriores**. O gráfico por categoria conta produtos, inclusive aqueles com saldo zero. Os totais mensais somam unidades de entradas e saídas explícitas, agrupadas pelo horário de São Paulo. Use os filtros de ano, categoria e produto para restringir a visão mensal.
 
 Cadastrar um produto ou editar diretamente sua quantidade não conta como entrada ou saída no gráfico mensal. Os filtros de categoria consideram a categoria atual de cada produto.
 
 ## Limitações atuais e ajuda
 
-- Alertas de estoque mínimo, fabricantes, fornecedores e motivos de movimentação ainda não estão integrados às telas atuais.
 - Não há exclusão de produtos nem exportação de relatórios na interface.
-- As pastilhas de exemplo do modelo anterior de estoque não aparecem no estoque atual. Cadastre os produtos pela tela **Estoque**.
+- O menu **Relatórios** soma entradas e saídas de pastilhas por mês. Os registros do estoque anterior permanecem preservados e seus totais podem ser consultados em **Relatórios anteriores**.
 - Se o servidor estiver indisponível, contate o responsável pela aplicação. Se uma gravação conflitar com outra alteração, recarregue o estoque; se a sessão expirar, entre novamente.
 
 ## Outras documentações

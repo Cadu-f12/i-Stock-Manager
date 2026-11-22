@@ -18,7 +18,7 @@ public class FrontendUserController {
 
     @GetMapping("/auth/me")
     public AdminUserService.UserView me(Authentication auth) {
-        return AdminUserService.UserView.of(accounts.fetchUser(auth.getName()));
+        return AdminUserService.UserView.of(accounts.findByEmail(auth.getName()));
     }
 
     @GetMapping("/admin/users")
@@ -26,16 +26,16 @@ public class FrontendUserController {
 
     @PostMapping("/admin/users")
     public AdminUserService.UserView create(@RequestBody AdminUserService.UserInput input, Authentication auth) {
-        return users.save(null, input, accounts.fetchUser(auth.getName()).getId());
+        return users.save(null, input, accounts.findByEmail(auth.getName()).getId());
     }
 
     @PutMapping("/admin/users/{id}")
     public AdminUserService.UserView update(@PathVariable long id, @RequestBody AdminUserService.UserInput input, Authentication auth) {
-        return users.save(id, input, accounts.fetchUser(auth.getName()).getId());
+        return users.save(id, input, accounts.findByEmail(auth.getName()).getId());
     }
 
     @DeleteMapping("/admin/users/{id}")
     public void delete(@PathVariable long id, Authentication auth) {
-        users.delete(id, accounts.fetchUser(auth.getName()).getId());
+        users.delete(id, accounts.findByEmail(auth.getName()).getId());
     }
 }

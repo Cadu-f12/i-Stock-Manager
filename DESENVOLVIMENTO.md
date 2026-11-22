@@ -225,7 +225,11 @@ Produto: `{id,version,name,category,quantity,updatedAt,history}`. `updatedAt` é
 
 `ApiErrors` converte validações em 400, ausências em 404 e conflitos de saldo, categoria, duplicidade ou versão em 409, com `{message}`. A segurança responde 401/403 com `{status,error,message}`. O cliente trata também indisponibilidade 502/503/504 e falha de rede. Em 409, recarregue o estoque antes de tentar salvar novamente.
 
-A API legada exige Admin: `GET /user`, `GET /user/{id}`, `POST /user/createUser`, `POST /user/fetchUser`, `PUT /user/updateUser/{id}`, `DELETE /user/deleteUser/{id}`. Ela usa `UserService` e a entidade `User`, com validações diferentes de `AdminUserService`; não pressupor proteção contra autoexclusão nem a mesma política de senhas. A senha tem serialização somente de entrada. O frontend usa exclusivamente a API `/api`.
+A API legada exige Admin: `GET /user`, `GET /user/{id}`, `POST /user/createUser`, `POST /user/fetchUser`, `PUT /user/updateUser/{id}`, `DELETE /user/deleteUser/{id}`. Ela usa `UserService`, `UserRequestDTO` e `UserResponseDTO`, com validações diferentes de `AdminUserService`; não pressupor proteção contra autoexclusão nem a mesma política de senhas. A senha tem serialização somente de entrada. O frontend usa `/api` para autenticação, usuários e leitura dos relatórios anteriores.
+
+Os endereços #produtos e #estoque abrem a mesma lista. Fabricantes e fornecedores usam #fabricantes e #fornecedores. Apenas o relatório histórico lê /api/inventory. A tela operacional usa as rotas de domínio pela mesma origem e pelo mesmo cliente JWT. O proxy Vite encaminha /pastilles, /movement, /manufacturer e /supplier ao backend. O formulário consulta `GET /movement/reasons` para listar os motivos ativos (id, description, type).
+
+A API de pastilhas oferece `GET /movement` com filtros opcionais `pastille_id`, `user_id`, `type` (IN/OUT), `from` e `to` (datas inclusivas), além de `GET /movement/{id}`. Para registrar, envie `POST /movement` com `{"pastille":1,"reason_movement_id":2,"quantity":3}`, usando IDs existentes. O tipo vem do motivo ativo e o autor vem do JWT. A operação altera o saldo da pastilha na mesma transação do registro.
 
 ## Autenticação e usuários
 
@@ -248,9 +252,9 @@ Relatórios são calculados no navegador a partir do estoque completo. O gráfic
 Existem dois modelos sem sincronização:
 
 - `inventory_product`, `inventory_category`, `inventory_product_history`: usados nas telas.
-- `Pastille`, `Movement`, `Manufacturer`, `Supplier`, `ReasonMovement`: modelo legado com SKU, estoque mínimo, fabricantes, fornecedores e motivos. Possui entidades/repositórios, mas não controllers de estoque equivalentes aos de `inventory`.
+- `Pastille`, `Movement`, `Manufacturer`, `Supplier`, `ReasonMovement`: modelo legado com SKU, estoque mínimo, fabricantes, fornecedores e motivos. A API autenticada expõe `/pastilles` (cadastro, consulta e edição), `/manufacturer` e `/supplier` (CRUD). O cadastro e a edição aceitam `supplier_ids` (lista de IDs de fornecedores). Na edição, omitir o campo preserva os vínculos e enviar uma lista vazia remove todos. A listagem retorna os nomes em `suppliers`. O filtro `GET /pastilles?on_alert=true` considera saldo até cinco unidades acima do mínimo. Consulte os contratos em `/swagger-ui.html` ou `/v3/api-docs` no backend.
 
-O seed só executa com `--seed`; Compose e o script Windows fornecem esse argumento por padrão. Preserva a conta inicial quando seu e-mail já existe; para fabricantes, fornecedores, motivos e pastilhas, pula cada grupo se a tabela já contém registros. Não preenche `inventory_*`.
+O seed só executa com `--seed`; Compose e o script Windows fornecem esse argumento por padrão. Preserva a conta inicial quando seu e-mail já existe; completa os cadastros de demonstração ausentes. Se o histórico estiver vazio, gera movimentos apenas para as pastilhas criadas na mesma execução. Não preenche `inventory_*`.
 
 Hibernate usa `ddl-auto=update`. Flyway consta nas dependências, mas não há scripts de migração versionados identificados. Não há migração automática entre H2 e MySQL nem entre modelos de estoque. Faça backup antes de mudanças de esquema; não remova `mysql_data` ou `backend/.local` como solução para falhas de inicialização.
 

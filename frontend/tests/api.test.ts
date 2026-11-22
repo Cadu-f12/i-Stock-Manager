@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { api, ApiError, setAccessToken, getAccessToken, clearAccessToken } from '../src/api.ts'
+import { api, domainApi, ApiError, setAccessToken, getAccessToken, clearAccessToken } from '../src/api.ts'
 
 test('cliente JWT envia JSON e Bearer, encerra sessão em 401 e preserva sessão em 403', async () => {
   const storage = new Map<string, string>()
@@ -24,6 +24,12 @@ test('cliente JWT envia JSON e Bearer, encerra sessão em 401 e preserva sessão
       return new Response('{"id":1}')
     }
     assert.deepEqual(await api('/inventory/products', { method: 'POST', body: '{}' }), { id: 1 })
+    globalThis.fetch = async (url, options) => {
+      assert.equal(url, '/movement?pastille_id=17')
+      assert.equal(new Headers(options?.headers).get('Authorization'), 'Bearer test-token')
+      return new Response('[]')
+    }
+    assert.deepEqual(await domainApi('/movement?pastille_id=17'), [])
     globalThis.fetch = async () => new Response('{}', { status: 403 })
     await assert.rejects(api('/admin/users'), (error: unknown) => error instanceof ApiError && error.status === 403)
     assert.equal(getAccessToken(), 'test-token')

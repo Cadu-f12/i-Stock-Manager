@@ -73,6 +73,13 @@ class FrontendIntegrationTests {
         assertEquals(403, request("GET", "/user", operatorToken, null).statusCode());
         assertEquals(200, request("GET", "/api/inventory", operatorToken, null).statusCode());
         User operator = users.findByEmail("operator@example.com").orElseThrow();
+        String legacyPath = "/user/updateUser/" + operator.getId();
+        String legacyFields = "\"name\":\"Operator\",\"email\":\"operator@example.com\"";
+        assertEquals(200, request("PUT", legacyPath, token, "{" + legacyFields + "}").statusCode());
+        login(operator.getEmail(), "password123");
+        assertEquals(200, request("PUT", legacyPath, token,
+                "{" + legacyFields + ",\"password\":\"changed123\"}").statusCode());
+        login(operator.getEmail(), "changed123");
         var update = request("PUT", "/api/admin/users/" + operator.getId(), token,
                 "{\"name\":\"Operator\",\"email\":\"operator@example.com\",\"password\":\"newpassword123\",\"role\":\"Operator\",\"active\":true}");
         assertEquals(200, update.statusCode(), update.body());

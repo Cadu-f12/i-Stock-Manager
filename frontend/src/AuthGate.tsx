@@ -1,14 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import App from './App'
-import type { Product } from './inventoryData'
 import Icon from './Icon'
 import { api, ApiError, getAccessToken, setAccessToken, clearAccessToken } from './api'
 import type { User } from './usersData'
 
 export default function AuthGate() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [categories, setCategories] = useState<string[]>([])
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -29,7 +26,7 @@ export default function AuthGate() {
   }, [refresh])
   useEffect(() => { void initialize() }, [initialize])
   useEffect(() => {
-    function expired() { setUser(null); setProducts([]); setCategories([]); setError('Sua sessão terminou. Entre novamente.') }
+    function expired() { setUser(null); setError('Sua sessão terminou. Entre novamente.') }
     function focus() { if (user) void refresh().catch(() => {}) }
     window.addEventListener('session-expired', expired)
     window.addEventListener('focus', focus)
@@ -46,16 +43,15 @@ export default function AuthGate() {
       const login = await api<{ accessToken: string; tokenType: string }>('/public/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) })
       setAccessToken(login.accessToken)
       await refresh()
-      window.location.hash = '#estoque'
+      window.location.hash = '#produtos'
     } catch (error) { setError((error as Error).message) }
     finally { setBusy(false) }
   }
   async function logout() {
     clearAccessToken()
-    setProducts([]); setCategories([])
     setUser(null); setError(''); window.location.hash = '#login'
   }
-  if (user) return <App currentUser={user} onLogout={logout} refreshSession={refresh} products={products} setProducts={setProducts} categories={categories} setCategories={setCategories} />
+  if (user) return <App currentUser={user} onLogout={logout} refreshSession={refresh} />
   return <div className="login-page"><section className="login-card" aria-labelledby="login-title">
     <div className="brand"><span className="brand-symbol"><Icon name="box" /></span><span>iStock<span className="brand-dot">.</span></span></div>
     <div className="eyebrow">GESTÃO DE ESTOQUE</div>

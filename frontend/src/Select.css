@@ -1,3 +1,50 @@
+.movement-reason { display: grid; gap: 6px; font-size: 12px; font-weight: 600; }
+.movement-reason details { position: relative; }
+.movement-reason summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+  padding: 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.movement-reason summary::-webkit-details-marker { display: none; }
+.movement-reason summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border: solid var(--text-muted);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+.movement-reason details[open] summary { border-color: var(--accent); }
+.movement-reason details[open] summary::after { transform: rotate(225deg); }
+.movement-reason summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.reason-options {
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  z-index: 1;
+  display: grid;
+  gap: 2px;
+  margin-top: 5px;
+  padding: 5px;
+  max-height: min(9rem, 40dvh);
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 4px 12px #0f172a0d;
+}
+.reason-options button { padding: 9px 10px; background: var(--surface); color: var(--text-secondary); text-align: left; }
+.reason-options button:hover, .reason-options button:focus-visible { background: var(--surface-muted); }
+.reason-options button:focus-visible { outline-offset: -2px; }
+.reason-options button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-hover); }
+
 /* Shared treatment for filters, pagination and form fields. */
 select:not([multiple]) {
   appearance: none;

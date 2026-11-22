@@ -8,8 +8,8 @@ O público principal é a equipe que consulta e movimenta o estoque e os adminis
 
 ## Escopo e continuidade entre tarefas
 
-- **Implementado:** autenticação e perfis, produtos e categorias, entradas/saídas, histórico, pesquisa/filtros/paginação, administração de usuários e relatórios de estoque.
-- **Intenção de domínio ainda incompleta:** controle especializado de pastilhas, estoque mínimo, fabricantes, fornecedores e motivos de movimentação aparecem no modelo legado, mas não estão integrados às telas. Não apresentar essa intenção como funcionalidade pronta.
+- **Implementado:** autenticação e perfis, pastilhas, fabricantes e fornecedores, entradas/saídas, histórico, pesquisa/filtros/paginação, administração de usuários e relatórios de estoque.
+- **Estoque de pastilhas:** Produtos usa uma única listagem de pastilhas em #produtos (também acessível por #estoque), com seções auxiliares de fabricantes e fornecedores. Uma pastilha aceita zero ou mais fornecedores cadastrados. Pastilles.tsx consome as rotas de domínio para cadastros, alertas, movimentações e histórico. PastilleReport.tsx agrega movimentos por mês. Na interface, apenas Relatórios anteriores lê inventory_*. Todas as operações de estoque usam /pastilles e /movement.
 - **Pendências, não autorização:** unificar os estoques, integrar o modelo legado ou preparar produção exige uma solicitação que inclua esse trabalho e análise de impacto. Não transformar pendências em tarefas implícitas.
 - **Limite de expansão:** não ampliar o produto para outros domínios ou substituir sua arquitetura por preferência do agente. Relacione cada mudança solicitada ao objetivo do estoque e preserve o restante do escopo.
 
@@ -61,11 +61,12 @@ Para alto impacto, aprofunde dependências, compatibilidade, migração e regres
 - `backend/src/main/java/com/istock/system/security`: JWT, login e autorização.
 - `inventory/InventoryController` e `InventoryService`: consulta e operações transacionais de estoque.
 - `admin/FrontendUserController`, `AdminUserService`, `ApiErrors`: usuários e erros da API atual.
+- `MovementsController` e `MovementService`: a API de pastilhas registra movimentos por motivo ativo, identifica o autor pela sessão e bloqueia a pastilha durante a atualização. O contrato não recebe a versão vista pelo cliente.
 - `controller/UserController` e `service/UserService`: API legada `/user`, com regras diferentes.
 - `entities`, `repository`, `seed/DatabaseSeeder`: modelo legado, usuários compartilhados e dados iniciais.
 - `backend/src/main/resources`, `compose.yaml`, Dockerfiles e `scripts/start-local.ps1`: configuração, perfis e execução.
 
-Fluxo principal: login fornece JWT; frontend consulta perfil e estoque; alteração envia versão; serviço valida, grava saldo e histórico na mesma transação e devolve produto atualizado; só então o frontend substitui seu estado. Em conflito, preserve o erro e a opção de recarregar os dados.
+Fluxo da API anterior /api/inventory: login fornece JWT; frontend consulta perfil e estoque; alteração envia versão; serviço valida, grava saldo e histórico na mesma transação e devolve produto atualizado; só então o frontend substitui seu estado. Em conflito, preserve o erro e a opção de recarregar os dados.
 
 ## Invariantes a preservar salvo solicitação explícita
 
@@ -83,18 +84,18 @@ Fluxo principal: login fornece JWT; frontend consulta perfil e estoque; alteraç
 ### Autenticação e usuários
 
 - `JwtConfig/JwtService`: HS256, chave Base64 de exatamente 32 bytes, validação de emissor e tempo; subject por e-mail. Validade configurada atualmente em 900 segundos.
-- `SecurityConfig`: `/api/public/**` público; `/api/admin/**` e `/user`/`/user/**` exigem ADMIN; demais requisições exigem autenticação. Contas e autoridades são relidas do banco em cada JWT.
+- `SecurityConfig`: `/api/public/**` público; `/api/admin/**` e `/user`/`/user/**` exigem ADMIN; Swagger UI e OpenAPI são públicos; demais requisições exigem autenticação. Contas e autoridades são relidas do banco em cada JWT.
 - Senhas usam BCrypt e nunca são retornadas: `User.password` é somente de entrada e `UserView` não a inclui.
 - `AdminUserService`: papéis externos `Admin`/`Operator`, internos `ADMIN`/`OPERATOR`; e-mail normalizado e único sem diferenciar caixa; nome até 120, e-mail até 60, status obrigatório. Senha nova tem mínimo de 8 caracteres e máximo de 72 bytes UTF-8; vazia/ausente na edição mantém a anterior.
 - Pela API administrativa, impedir autoexclusão, autodesativação e remoção do próprio papel Admin. Essas garantias **não se aplicam automaticamente** à API legada; não documentá-la como equivalente.
 - `api.ts`: token em `sessionStorage` sob `istock.accessToken`; JSON e Bearer centralizados; login não envia Bearer. Em 401, limpar somente o token ainda correspondente à requisição; 403 não encerra sessão.
-- `AuthGate`: revalidar ao focar e a cada minuto, limpar produtos/categorias ao sair ou expirar. Logout não revoga token no servidor; troca de senha também não implementa revogação.
+- `AuthGate`: revalidar ao focar e a cada minuto, desmontar a área autenticada e descartar seus dados ao sair ou expirar. Logout não revoga token no servidor; troca de senha também não implementa revogação.
 - Relatórios e usuários são exibidos a Admin; Operator pode consultar e modificar estoque pela API. Ocultar navegação não substitui autorização no backend.
 
 ### Persistência e compatibilidade
 
 - `inventory_*` e entidades legadas `Pastille/Movement/Manufacturer/Supplier/ReasonMovement` não são sincronizados. Não unificar nem migrar dados incidentalmente.
-- Seed depende de `--seed`, preserva conta inicial existente e pula grupos legados já preenchidos; não cria produtos na interface atual. Compose/script Windows habilitam seed por padrão.
+- Seed depende de `--seed`, preserva conta inicial existente e completa cadastros de demonstração ausentes e limita os movimentos de exemplo às pastilhas criadas nessa execução; não cria produtos no estoque anterior. Compose/script Windows habilitam seed por padrão.
 - MySQL em `mysql_data` e H2 em `backend/.local` são bases independentes. Não apagar dados para resolver erro de ambiente; planejar backup/migração para alterações de esquema.
 - `ddl-auto=update` não equivale a migração versionada. Flyway existe como dependência, mas não há scripts de migração identificados.
 - Não versionar `.env`, chaves, tokens, dados locais ou dumps privados. Não reproduzir os valores fixos do perfil `local` em documentação. Separar sua correção de tarefas exclusivamente documentais.

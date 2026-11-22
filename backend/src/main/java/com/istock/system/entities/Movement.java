@@ -49,6 +49,14 @@ public class Movement {
         this.dateTime = dateTime;
     }
 
+    public Movement(Pastille pastille, User user, ReasonMovement reasonMovement, Integer quantity, LocalDateTime dateTime) {
+        this.pastille = pastille;
+        this.user = user;
+        this.reasonMovement = reasonMovement;
+        this.quantity = quantity;
+        this.dateTime = dateTime;
+    }
+
     public Long getId() {
         return id;
     }

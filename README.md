@@ -8,9 +8,9 @@ The project was created in an academic context at **SENAI/SC** by Carlos Eduardo
 
 ## Available features
 
-- Product and category registration, product editing and stock balance consultation.
+- Register inserts by SKU, manufacturer and minimum stock.
 - Stock entries and withdrawals with an author and change history.
-- Search by name, ID or category; filters by category, last update date and stock availability.
+- Search by ID, SKU, description or manufacturer and filter by alert or availability.
 - Sorting and pages of 50, 100 or 200 products.
 - User administration and inventory reports for administrators.
 
@@ -20,24 +20,18 @@ Open the application address provided by whoever runs the system and sign in wit
 
 | Role | Available actions |
 | --- | --- |
-| Operator | View, register and edit products; record entries/withdrawals; manage categories and view history |
+| Operator | View, register and edit products; record entries/withdrawals; manage manufacturers and suppliers and view history |
 | Admin | All inventory actions, plus user administration and reports |
 
 Use **Sair** to sign out. When your session expires, sign in again.
 
 ## Using the application
 
-### Products and categories
+### Cutting inserts and stock movements
 
-In **Estoque**, choose **Nova categoria** to organize products, or use **Sem categoria**. Select **Novo produto**, enter a name, category and whole-number quantity, and save. Product names accept up to 120 characters; category names up to 60.
+In **Produtos**, select **Nova pastilha** and enter the SKU, manufacturer and minimum stock. Select any registered suppliers that provide the insert. Their names appear in the stock table. Use search, availability and alert filters, sorting and pagination to locate an item. Manage contacts under **Fabricantes** and **Fornecedores**.
 
-Use the search and filters to find a product. Open its details to see the balance and history, or choose the edit action to update it. Deleting a category keeps its products and moves them to **Sem categoria**. The default category cannot be deleted.
-
-### Stock entries and withdrawals
-
-Use **+** on a product to register an entry and **−** to register a withdrawal. Enter a positive whole number and confirm. Stock cannot become negative or exceed 999999999 units. Each operation records the responsible user and appears in the product history.
-
-If someone else has changed the product, reload the inventory before trying again. Review the new balance before submitting the operation again.
+Each new insert starts with zero units. Use **+** or **−**, choose a reason and enter the quantity. Open **Histórico** to see the operator and date. The alert filter includes balances up to five units above minimum.
 
 ### Users
 
@@ -47,15 +41,14 @@ You cannot delete or deactivate your own account or remove your own Admin role t
 
 ### Reports
 
-As Admin, open **Relatórios**. The category chart counts products, including those with zero stock. Monthly totals count units from explicit stock entries and withdrawals, grouped by São Paulo time. Use the year, category and product filters to narrow the monthly view.
+As Admin, open **Relatórios anteriores**. The category chart counts products, including those with zero stock. Monthly totals count units from explicit stock entries and withdrawals, grouped by São Paulo time. Use the year, category and product filters to narrow the monthly view.
 
 Creating a product or directly editing its quantity does not count as an entry or withdrawal in the monthly chart. Category filters reflect each product's current category.
 
 ## Current limitations and help
 
-- Minimum stock alerts, manufacturers, suppliers and movement reasons are not integrated into the current screens.
 - There is no product deletion or report export in the interface.
-- Initial sample cutting inserts from the older inventory model do not appear in the current inventory. Register products through **Estoque**.
+- **Relatórios** shows monthly insert movements. Historical inventory records are preserved. Administrators can consult their totals in **Relatórios anteriores**.
 - If the server is unavailable, contact whoever runs the application. If a save conflicts with another change, reload the inventory; if the session expires, sign in again.
 
 ## Other documentation
