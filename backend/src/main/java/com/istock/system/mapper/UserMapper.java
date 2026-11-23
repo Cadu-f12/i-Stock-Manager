@@ -11,6 +11,12 @@ import java.util.List;
 @Component
 public class UserMapper {
 
+    private final ReasonMovementMapper reasonMovementMapper;
+
+    public UserMapper(ReasonMovementMapper reasonMovementMapper) {
+        this.reasonMovementMapper = reasonMovementMapper;
+    }
+
     public User toEntity(UserRequestDTO dto) {
 
         User user = new User();
@@ -47,11 +53,8 @@ public class UserMapper {
                             movement.getUser().getName()
                     );
 
-                    ReasonMovementDTO reasonDTO = new ReasonMovementDTO(
-                            movement.getReasonMovement().getId(),
-                            movement.getReasonMovement().getDescription(),
-                            movement.getReasonMovement().getType()
-                    );
+                    ReasonMovementDTO reasonDTO = reasonMovementMapper
+                            .toReasonMovementDTO(movement.getReasonMovement());
 
                     return new MovementDTO(
                             movement.getId(),
