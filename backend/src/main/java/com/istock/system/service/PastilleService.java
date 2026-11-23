@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import com.istock.system.dtos.request.CategorySelection;
+import com.istock.system.repository.PastilleCategoryRepository;
 import com.istock.system.entities.Supplier;
 import com.istock.system.repository.SupplierRepository;
 import org.springframework.http.HttpStatus;
@@ -28,17 +30,20 @@ public class PastilleService {
     private final PastilleRepository pastilleRepository;
     private final ManufacturerRepository manufacturerRepository;
     private final SupplierRepository supplierRepository;
+    private final PastilleCategoryRepository categories;
     private final PastilleMapper mapper;
 
     public PastilleService(
             PastilleRepository pastilleRepository,
             ManufacturerRepository manufacturerRepository,
             SupplierRepository supplierRepository,
+            PastilleCategoryRepository categories,
             PastilleMapper mapper
     ) {
         this.pastilleRepository = pastilleRepository;
         this.manufacturerRepository = manufacturerRepository;
         this.supplierRepository = supplierRepository;
+        this.categories = categories;
         this.mapper = mapper;
     }
 
@@ -83,8 +88,15 @@ public class PastilleService {
                 new ArrayList<>()
         ));
 
+        updateCategory(pastille, body.category());
         updateSuppliers(pastille, body.supplierIds());
         return mapper.toListDTO(pastille);
+    }
+
+    private void updateCategory(Pastille pastille, CategorySelection selection) {
+        if (selection == null) return;
+        pastille.setCategory(selection.id() == null ? null : categories.findById(selection.id())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoria não encontrada.")));
     }
 
     private void updateSuppliers(Pastille pastille, Set<Long> supplierIds) {
@@ -118,6 +130,7 @@ public class PastilleService {
                         "Manufacturer with ID '" + pastilleRequest.manufacturerId() + "' was not found."
                 ));
 
+        updateCategory(pastille, pastilleRequest.category());
         updateSuppliers(pastille, pastilleRequest.supplierIds());
         pastille.setDescription(pastilleRequest.description());
         pastille.setManufacturer(manufacturer);

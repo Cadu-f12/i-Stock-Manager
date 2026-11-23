@@ -12,6 +12,11 @@ import java.util.List;
 @Component
 public class PastilleMapper {
 
+    private CategoryView categoryOf(Pastille pastille) {
+        var category = pastille.getCategory();
+        return category == null ? null : new CategoryView(category.getId(), category.getName());
+    }
+
     public PastilleListDTO toListDTO(Pastille pastille) {
         return new PastilleListDTO(
                 pastille.getId(),
@@ -22,7 +27,8 @@ public class PastilleMapper {
                 pastille.getManufacturer() != null
                         ? pastille.getManufacturer().getName()
                         : null,
-                pastille.getSuppliers().stream().map(Supplier::getName).sorted().toList()
+                pastille.getSuppliers().stream().map(Supplier::getName).sorted().toList(),
+                categoryOf(pastille)
         );
     }
 
@@ -38,7 +44,8 @@ public class PastilleMapper {
                 ),
                 toManufacturerDTO(pastille.getManufacturer()),
                 toSupplierListDTO(pastille.getSuppliers()),
-                toMovementList(pastille.getMovements())
+                toMovementList(pastille.getMovements()),
+                categoryOf(pastille)
         );
     }
 

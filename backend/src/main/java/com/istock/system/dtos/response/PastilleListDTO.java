@@ -12,5 +12,6 @@ public record PastilleListDTO(
         @JsonProperty("current_balance")
         Integer currentBalance,
         String manufacturer,
-        java.util.List<String> suppliers
+        java.util.List<String> suppliers,
+        CategoryView category
 ) {}

@@ -1,3 +1,24 @@
+.site-options {
+  display: none;
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 5px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px #0f172a0d;
+  font: 400 12px/1.5 'Segoe UI', Arial, sans-serif;
+}
+.site-options:popover-open { display: grid; gap: 2px; }
+.site-options [role="option"] { border-radius: 6px; padding: 8px 10px; cursor: pointer; overflow-wrap: anywhere; }
+.site-options [data-active] { background: var(--surface-muted); }
+.site-options [aria-selected="true"] { background: var(--accent-soft); color: var(--accent-hover); font-weight: 600; }
+select[aria-expanded="true"] { border-color: var(--accent); }
+
 .movement-reason { display: grid; gap: 6px; font-size: 12px; font-weight: 600; }
 .movement-reason details { position: relative; }
 .movement-reason summary {

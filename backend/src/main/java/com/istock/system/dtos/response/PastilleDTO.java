@@ -12,5 +12,6 @@ public record PastilleDTO(
         StockDTO stock,
         ManufacturerResponseDTO manufacturer,
         List<SupplierResponseDTO> suppliers,
-        List<MovementDTO> movements
+        List<MovementDTO> movements,
+        CategoryView category
 ) {}

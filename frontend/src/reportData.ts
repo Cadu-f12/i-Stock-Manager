@@ -16,8 +16,8 @@ export function movementAmount(description: string) {
   return Number.isSafeInteger(quantity) && quantity > 0 ? { direction: match[1] === 'Entrada' ? 'incoming' as const : 'outgoing' as const, quantity } : null
 }
 
-export function categoryTotals(products: Product[]) {
-  const totals = new Map<string, number>()
+export function categoryTotals(products: Pick<Product, 'category'>[], categories: string[] = []) {
+  const totals = new Map(categories.map(name => [name, 0]))
   for (const product of products) totals.set(product.category, (totals.get(product.category) ?? 0) + 1)
   return [...totals].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'pt-BR'))
 }

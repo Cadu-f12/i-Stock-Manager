@@ -1,15 +1,18 @@
+import PageHeader from './PageHeader'
+import Select from './Select'
 import { useEffect, useRef, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { FormEvent, ReactNode } from 'react'
 import { domainApi } from './api'
 import Icon from './Icon'
 
-type Item = { id: number; sku_code: string; description: string | null; minimum_stock_level: number; current_balance: number; manufacturer: string | null; suppliers: string[] }
+type Category = { id: number; name: string }
+type Item = { id: number; sku_code: string; description: string | null; minimum_stock_level: number; current_balance: number; category: Category | null; manufacturer: string | null; suppliers: string[] }
 type Partner = { id: number; name: string; contact: string; pastilles: Item[]; isActive?: boolean; is_active?: boolean }
 type Reason = { id: number; description: string; type: 'IN' | 'OUT' }
 type Movement = { id: number; date_time: string; quantity: number; reason: Reason; user: { name: string } }
-type Detail = { manufacturer: Partner | null; suppliers: Partner[] }
+type Detail = { category: Category | null; manufacturer: Partner | null; suppliers: Partner[] }
 type Catalog = 'manufacturer' | 'supplier'
-type Action = { kind: 'new' } | { kind: 'edit' | 'history'; item: Item } | { kind: 'move'; item: Item; direction: Reason['type'] } | { kind: 'partner'; catalog: Catalog; partner?: Partner }
+type Action = { kind: 'category'; category?: Category } | { kind: 'new' } | { kind: 'edit' | 'history'; item: Item } | { kind: 'move'; item: Item; direction: Reason['type'] } | { kind: 'partner'; catalog: Catalog; partner?: Partner }
 
 function PastilleDialog({ action, close, saved }: { action: Action; close: () => void; saved: (message: string) => void }) {
   const dialog = useRef<HTMLDialogElement>(null)
@@ -18,6 +21,7 @@ function PastilleDialog({ action, close, saved }: { action: Action; close: () =>
   const [error, setError] = useState('')
   const [ready, setReady] = useState(false)
   const [reasons, setReasons] = useState<Reason[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [manufacturers, setManufacturers] = useState<Partner[]>([])
   const [suppliers, setSuppliers] = useState<Partner[]>([])
   const [detail, setDetail] = useState<Detail | null>(null)
@@ -40,12 +44,14 @@ function PastilleDialog({ action, close, saved }: { action: Action; close: () =>
         setReasons(active.filter(entry => entry.type === action.direction))
       }
       if (action.kind === 'edit' || action.kind === 'new') {
-        const [makers, vendors] = await Promise.all([
+        const [makers, vendors, categoryList] = await Promise.all([
           domainApi<Partner[]>('/manufacturer', options),
           domainApi<Partner[]>('/supplier', options),
+          domainApi<Category[]>('/pastilles/categories', options),
         ])
         setManufacturers(makers)
         setSuppliers(vendors)
+        setCategories(categoryList)
       }
       if (action.kind === 'edit' || action.kind === 'history')
         setDetail(await domainApi<Detail>(`/pastilles/${action.item.id}`, options))
@@ -69,11 +75,15 @@ function PastilleDialog({ action, close, saved }: { action: Action; close: () =>
         await domainApi('/movement', { method: 'POST', body: JSON.stringify({ pastille: action.item.id, reason_movement_id: Number(reasonId), quantity: Number(value('quantity')) }) })
         saved('Movimentação registrada.')
       } else if (action.kind === 'new' || action.kind === 'edit') {
-        const fields = { supplier_ids: form.getAll('supplier').map(Number), description: value('description'), manufacturer_id: Number(value('manufacturer')), minimum_stock_level: Number(value('minimum')) }
+        const fields = { category: { id: Number(value('category')) || null }, supplier_ids: form.getAll('supplier').map(Number), description: value('description'), manufacturer_id: Number(value('manufacturer')), minimum_stock_level: Number(value('minimum')) }
         if (action.kind === 'new')
           await domainApi('/pastilles', { method: 'POST', body: JSON.stringify({ ...fields, sku_code: value('sku') }) })
         else await domainApi(`/pastilles/${action.item.id}`, { method: 'PUT', body: JSON.stringify(fields) })
         saved('Pastilha salva.')
+      } else if (action.kind === 'category') {
+        const path = action.category ? `/pastilles/categories/${action.category.id}` as const : '/pastilles/categories'
+        await domainApi(path, { method: action.category ? 'PUT' : 'POST', body: JSON.stringify({ name: value('name') }) })
+        saved('Categoria salva.')
       } else if (action.kind === 'partner') {
         const { catalog, partner } = action
         const resource = catalog === 'supplier' ? 'Supplier' : 'Manufacturer'
@@ -84,7 +94,7 @@ function PastilleDialog({ action, close, saved }: { action: Action; close: () =>
     } catch (e) { setError((e as Error).message) }
     finally { submitting.current = false; setBusy(false) }
   }
-  const titles = { new: 'Nova pastilha', edit: 'Editar pastilha', move: 'Registrar movimentação', history: 'Histórico da pastilha', partner: 'Cadastro' }
+  const titles = { new: 'Nova pastilha', edit: 'Editar pastilha', move: 'Registrar movimentação', history: 'Histórico da pastilha', partner: 'Cadastro', category: action.kind === 'category' && action.category ? 'Editar categoria' : 'Nova categoria' }
   return <dialog ref={dialog} onCancel={event => { event.preventDefault(); if (!busy) close() }} aria-labelledby="pastille-dialog">
     <div className="dialog-heading"><h2 id="pastille-dialog">{titles[action.kind]}</h2><button className="secondary-button" disabled={busy} onClick={close}>Fechar</button></div>
     {item && <p><strong>{item.sku_code}</strong> · {item.description}</p>}
@@ -128,7 +138,11 @@ function PastilleDialog({ action, close, saved }: { action: Action; close: () =>
       {(action.kind === 'new' || action.kind === 'edit') && <>
         {action.kind === 'new' && <label>SKU<input name="sku" maxLength={30} required pattern=".*\S.*"/></label>}
         <label>Descrição<input name="description" maxLength={255} defaultValue={item?.description ?? ''}/></label>
-        <label>Fabricante<select name="manufacturer" required defaultValue={detail?.manufacturer?.id ?? ''}><option value="">Selecione</option>{manufacturers.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
+        <label>Fabricante<Select name="manufacturer" required defaultValue={detail?.manufacturer?.id ?? ''}><option value="">Selecione</option>{manufacturers.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</Select></label>
+        <label>Categoria<Select name="category" defaultValue={detail?.category?.id ?? ''}>
+          <option value="">Sem categoria</option>
+          {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </Select></label>
         <fieldset className="pastille-suppliers"><legend>Fornecedores</legend>
           {suppliers.length ? suppliers.map(s => <label key={s.id}>
             <input type="checkbox" name="supplier" value={s.id} defaultChecked={detail?.suppliers.some(link => link.id === s.id)}/>
@@ -138,6 +152,7 @@ function PastilleDialog({ action, close, saved }: { action: Action; close: () =>
         <label>Estoque mínimo<input type="number" name="minimum" step={1} min={action.kind === 'new' ? 1 : 0} max={999999999} defaultValue={item?.minimum_stock_level ?? 1} required/></label>
         {!manufacturers.length && <p>Cadastre um fabricante para adicionar uma pastilha.</p>}
       </>}
+      {action.kind === 'category' && <label>Nome<input name="name" required maxLength={60} pattern=".*\S.*" defaultValue={action.category?.name}/></label>}
       {action.kind === 'partner' && <>
         <label>Nome<input name="name" maxLength={120} required defaultValue={action.partner?.name}/></label>
         <label>Contato<input name="contact" maxLength={120} required defaultValue={action.partner?.contact}/></label>
@@ -147,8 +162,9 @@ function PastilleDialog({ action, close, saved }: { action: Action; close: () =>
   </dialog>
 }
 
-export default function Pastilles({ tab }: { tab: 'pastilles' | Catalog }) {
+export default function Pastilles({ tab, children }: { tab: 'pastilles' | 'categories' | Catalog; children: ReactNode }) {
   const [items, setItems] = useState<Item[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [partners, setPartners] = useState<Partner[]>([])
   const [alertOnly, setAlertOnly] = useState(false)
   const [stock, setStock] = useState('all')
@@ -169,12 +185,13 @@ export default function Pastilles({ tab }: { tab: 'pastilles' | Catalog }) {
     setError('')
     const load = tab === 'pastilles'
       ? domainApi<Item[]>(alertOnly ? '/pastilles?on_alert=true' : '/pastilles', options).then(setItems)
+      : tab === 'categories' ? domainApi<Category[]>('/pastilles/categories', options).then(setCategories)
       : domainApi<Partner[]>(`/${tab}`, options).then(setPartners)
     load.catch(e => { if (!controller.signal.aborted) setError(e.message) })
       .finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
   }, [tab, alertOnly, revision])
-  const labels = { pastilles: 'Pastilhas', manufacturer: 'Fabricantes', supplier: 'Fornecedores' }
+  const labels = { categories: 'Categorias', pastilles: 'Pastilhas', manufacturer: 'Fabricantes', supplier: 'Fornecedores' }
   const search = query.trim().toLocaleLowerCase('pt-BR')
   const filtered = items.filter(p => [p.id, p.sku_code, p.description, p.manufacturer].join(' ').toLocaleLowerCase('pt-BR').includes(search)
     && (stock === 'all' || (stock === 'empty' ? p.current_balance === 0 : p.current_balance > 0)))
@@ -186,40 +203,57 @@ export default function Pastilles({ tab }: { tab: 'pastilles' | Catalog }) {
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize))
   const currentPage = Math.min(page, pages)
   const visible = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const matchingCategories = categories.filter(c => c.name.toLocaleLowerCase('pt-BR').includes(search))
   const matching = partners.filter(p => [p.name, p.contact].join(' ').toLocaleLowerCase('pt-BR').includes(search))
-  return <section aria-labelledby="catalog-title">
-    <header className="page-header"><h2 id="catalog-title">{labels[tab]}</h2><button className="primary-button" onClick={() => setAction(tab === 'pastilles' ? { kind: 'new' } : { kind: 'partner', catalog: tab })}>{tab === 'pastilles' ? 'Nova pastilha' : tab === 'supplier' ? 'Novo fornecedor' : 'Novo fabricante'}</button></header>
+  return <>
+    <PageHeader section="Produtos" title="Gestão de produtos" description="Consulte o estoque de pastilhas e gerencie seus cadastros."><button className="primary-button" onClick={() => setAction(tab === 'pastilles' ? { kind: 'new' } : tab === 'categories' ? { kind: 'category' } : { kind: 'partner', catalog: tab })}><Icon name="plus" />{tab === 'pastilles' ? 'Nova pastilha' : tab === 'categories' ? 'Nova categoria' : tab === 'supplier' ? 'Novo fornecedor' : 'Novo fabricante'}</button></PageHeader>
+    {children}
     {tab === 'pastilles' && !loading && !error && <div className="inventory-summary">
       <span>{alertOnly ? 'Estoque em alerta' : 'Visão geral do estoque'}</span>
       <span><strong>{items.length}</strong> pastilhas · <strong>{items.reduce((sum, item) => sum + item.current_balance, 0).toLocaleString('pt-BR')}</strong> unidades</span>
     </div>}
-    <section className="filter-toolbar" onChange={() => setPage(1)}>
-      <label className="search-field"><input type="search" aria-label="Pesquisar cadastros" placeholder={tab === 'pastilles' ? 'Pesquisar SKU, descrição ou fabricante' : 'Pesquisar nome ou contato'} value={query} onChange={e => setQuery(e.target.value)}/></label>
+    <section className="filter-panel">
+      <div className="filter-topline"><span><Icon name="filter" />Filtrar {labels[tab].toLocaleLowerCase('pt-BR')}</span>
+        <button className="clear-button" disabled={!query && !alertOnly && stock === 'all'} onClick={() => { setQuery(''); setAlertOnly(false); setStock('all'); setPage(1) }}>Limpar filtros<Icon name="close" /></button>
+      </div>
+      <div className="filter-toolbar" onChange={() => setPage(1)}>
+      <label className="search-field"><Icon name="search" /><input type="search" aria-label="Pesquisar cadastros" placeholder={tab === 'pastilles' ? 'Pesquisar SKU, descrição ou fabricante' : tab === 'categories' ? 'Pesquisar categoria' : 'Pesquisar nome ou contato'} value={query} onChange={e => setQuery(e.target.value)}/></label>
       {tab === 'pastilles' && <label><input type="checkbox" checked={alertOnly} onChange={e => setAlertOnly(e.target.checked)}/> Somente em alerta</label>}
-      {tab === 'pastilles' && <label className="toolbar-field">Disponibilidade<select value={stock} onChange={e => setStock(e.target.value)}>
+      {tab === 'pastilles' && <label className="toolbar-field">Disponibilidade<Select value={stock} onChange={e => setStock(e.target.value)}>
         <option value="all">Todas</option><option value="available">Com estoque</option><option value="empty">Sem estoque</option>
-      </select></label>}
+      </Select></label>}
+      </div>
     </section>
     {notice && <p role="status">{notice}</p>}
     {loading ? <p role="status">Carregando…</p> : error ? <div role="alert">{error} <button onClick={() => setRevision(n => n + 1)}>Tentar novamente</button></div> :
-      <section className="products-section table-scroll">{tab === 'pastilles' && <div className="table-toolbar">
-        <div><h2>Pastilhas no estoque</h2><span className="result-count">{filtered.length} resultado(s)</span></div>
-        <div className="sort-controls"><label htmlFor="stock-sort">Ordenar por</label><select id="stock-sort" value={sort} onChange={e => { setSort(e.target.value as typeof sort); setPage(1) }}>
-          <option value="sku_code">SKU</option><option value="description">Descrição</option><option value="manufacturer">Fabricante</option><option value="current_balance">Saldo</option></select>
+      <section className="products-section table-scroll"><div className="table-toolbar">
+        <div><h2>{tab === 'pastilles' ? 'Pastilhas no estoque' : labels[tab]}</h2><span className="result-count">{tab === 'pastilles' ? filtered.length : tab === 'categories' ? matchingCategories.length : matching.length} resultado(s)</span></div>
+        {tab === 'pastilles' && <div className="sort-controls"><label htmlFor="stock-sort">Ordenar por</label><Select id="stock-sort" value={sort} onChange={e => { setSort(e.target.value as typeof sort); setPage(1) }}>
+          <option value="sku_code">SKU</option><option value="description">Descrição</option><option value="manufacturer">Fabricante</option><option value="current_balance">Saldo</option></Select>
           <button className="sort-direction" aria-label="Inverter ordenação" onClick={() => { setDescending(!descending); setPage(1) }}>{descending ? '↓' : '↑'}</button>
-        </div></div>}
-        {tab === 'pastilles' ? <table className="pastilles-table"><thead><tr>{['SKU', 'Descrição', 'Fabricante', 'Fornecedores', 'Mínimo', 'Saldo', 'Operações'].map(h => <th key={h} scope="col">{h}</th>)}</tr></thead>
-        <tbody>{visible.map(p => <tr key={p.id}><td>{p.sku_code}</td><td>{p.description}</td><td>{p.manufacturer}</td><td>{p.suppliers.join(', ') || 'Sem fornecedor'}</td><td>{p.minimum_stock_level}</td><td><div className="stock-control">
+        </div>}</div>
+        {tab === 'pastilles' ? <table className="pastilles-table"><thead><tr>{['SKU', 'Descrição', 'Categoria', 'Fabricante', 'Fornecedores', 'Mínimo', 'Saldo', 'Operações'].map(h => <th key={h} scope="col">{h}</th>)}</tr></thead>
+        <tbody>{visible.map(p => <tr key={p.id}><td>{p.sku_code}</td><td>{p.description}</td><td>{p.category?.name ?? 'Sem categoria'}</td><td>{p.manufacturer}</td><td>{p.suppliers.join(', ') || 'Sem fornecedor'}</td><td>{p.minimum_stock_level}</td><td><div className="stock-control">
           <button className="stock-button" aria-label={`Retirar unidades de ${p.sku_code}`} disabled={p.current_balance <= 0} onClick={() => setAction({ kind: 'move', item: p, direction: 'OUT' })}>−</button>
           <span className="quantity">{p.current_balance}</span>
           <button className="stock-button" aria-label={`Adicionar unidades a ${p.sku_code}`} disabled={p.current_balance >= 999999999} onClick={() => setAction({ kind: 'move', item: p, direction: 'IN' })}>+</button>
         </div></td><td><div className="row-actions">
           <button type="button" title="Ver histórico" aria-label={`Ver histórico de ${p.sku_code}`} onClick={() => setAction({ kind: 'history', item: p })}><Icon name="eye" /></button>
           <button type="button" title="Editar pastilha" aria-label={`Editar pastilha ${p.sku_code}`} onClick={() => setAction({ kind: 'edit', item: p })}><Icon name="edit" /></button>
-        </div></td></tr>)}</tbody></table> : <table><thead><tr><th>Nome</th><th>Contato</th><th>Operações</th></tr></thead><tbody>{matching.map(p => <tr key={p.id}><td>{p.name}</td><td>{p.contact}</td><td><button className="secondary-button" onClick={() => setAction({ kind: 'partner', catalog: tab, partner: p })}>Editar</button></td></tr>)}</tbody></table>}
-        {!(tab === 'pastilles' ? filtered : matching).length && <p className="empty-state">Nenhum registro encontrado.</p>}
-        {tab === 'pastilles' && <footer className="table-footer"><label>Por página <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(1) }}>
-          {[50, 100, 200].map(size => <option key={size}>{size}</option>)}</select></label>
+        </div></td></tr>)}</tbody></table> : tab === 'categories' ? <table>
+          <thead><tr><th>Nome</th><th className="actions-column">Operações</th></tr></thead>
+          <tbody>{matchingCategories.map(c => <tr key={c.id}><td>{c.name}</td><td>
+            <div className="row-actions"><button type="button" title="Editar categoria" aria-label={`Editar categoria ${c.name}`} onClick={() => setAction({ kind: 'category', category: c })}><Icon name="edit" /></button></div>
+          </td></tr>)}</tbody>
+        </table> : <table><thead><tr><th>Nome</th><th>Contato</th><th className="actions-column">Operações</th></tr></thead>
+          <tbody>{matching.map(p => <tr key={p.id}><td>{p.name}</td><td>{p.contact}</td><td><div className="row-actions">
+            <button type="button" title={tab === 'supplier' ? 'Editar fornecedor' : 'Editar fabricante'}
+              aria-label={`Editar ${tab === 'supplier' ? 'fornecedor' : 'fabricante'} ${p.name}`}
+              onClick={() => setAction({ kind: 'partner', catalog: tab, partner: p })}><Icon name="edit" /></button>
+          </div></td></tr>)}</tbody></table>}
+        {!(tab === 'pastilles' ? filtered : tab === 'categories' ? matchingCategories : matching).length && <p className="empty-state">Nenhum registro encontrado.</p>}
+        {tab === 'pastilles' && <footer className="table-footer"><label>Por página <Select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(1) }}>
+          {[50, 100, 200].map(size => <option key={size}>{size}</option>)}</Select></label>
           <nav className="pagination" aria-label="Paginação de pastilhas">
             <button className="secondary-button" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>Anterior</button>
             <span>Página {currentPage} de {pages}</span>
@@ -227,5 +261,5 @@ export default function Pastilles({ tab }: { tab: 'pastilles' | Catalog }) {
           </nav></footer>}
       </section>}
     {action && <PastilleDialog action={action} close={() => setAction(null)} saved={message => { setAction(null); setNotice(message); setRevision(n => n + 1) }}/>}
-  </section>
+  </>
 }

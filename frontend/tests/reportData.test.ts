@@ -18,6 +18,10 @@ const products = [
 test('pizza conta produtos e inclui produtos sem estoque', () => {
   assert.deepEqual(categoryTotals(products), [{ name: 'Ferragens', count: 2 }, { name: 'Pintura', count: 1 }])
   assert.deepEqual(categoryTotals([]), [])
+  assert.deepEqual(categoryTotals([], ['Fresamento']), [{ name: 'Fresamento', count: 0 }])
+  assert.deepEqual(categoryTotals([{ category: 'Sem categoria' }], ['Fresamento']), [
+    { name: 'Sem categoria', count: 1 }, { name: 'Fresamento', count: 0 },
+  ])
 })
 test('soma unidades em Brasília e ignora cadastro e edições', () => {
   const totals = monthlyTotals(products, 2026)

@@ -4,21 +4,22 @@ import './Select.css'
 import Icon from './Icon'
 import Users from './Users'
 import Pastilles from './Pastilles'
-import PastilleReport from './PastilleReport'
 import Reports from './Reports'
+import PageHeader from './PageHeader'
 import type { User } from './usersData'
 import { api } from './api'
 import type { Inventory } from './inventoryData'
 
 const sections = [
   { hash: '#produtos', screen: 'pastilles', label: 'Pastilhas' },
+  { hash: '#categorias', screen: 'categories', label: 'Categorias' },
   { hash: '#fabricantes', screen: 'manufacturer', label: 'Fabricantes' },
   { hash: '#fornecedores', screen: 'supplier', label: 'Fornecedores' },
 ] as const
 function currentScreen() {
   switch (window.location.hash) {
     case '#usuarios': return 'users'
-    case '#relatorios': return 'reports'
+    case '#relatorios':
     case '#relatorios-produtos': return 'legacyReports'
     default: return sections.find(section => section.hash === window.location.hash)?.screen ?? 'pastilles'
   }
@@ -65,23 +66,24 @@ function App({ currentUser, onLogout, refreshSession }: {
         <nav aria-label="Menu principal">
           <a className={`nav-link ${inventorySection ? "active" : ""}`} href="#produtos" aria-current={inventorySection ? "page" : undefined}><Icon name="box" /><span>Produtos</span></a>
           {isAdmin && <a className={`nav-link ${screen === 'users' ? 'active' : ''}`} href="#usuarios" aria-current={screen === 'users' ? 'page' : undefined}><Icon name="users" /><span>Usuários</span></a>}
-          {isAdmin && <a className={`nav-link ${screen === 'reports' ? 'active' : ''}`} href="#relatorios" aria-current={screen === 'reports' ? 'page' : undefined}><Icon name="chart" /><span>Relatórios</span></a>}
-          {isAdmin && <a className={`nav-link ${screen === "legacyReports" ? "active" : ""}`} href="#relatorios-produtos"><Icon name="chart" /><span>Relatórios anteriores</span></a>}
+          {isAdmin && <a className={`nav-link ${screen === "legacyReports" ? "active" : ""}`} href="#relatorios-produtos" aria-current={screen === "legacyReports" ? "page" : undefined}><Icon name="chart" /><span>Metadados</span></a>}
         </nav>
         <div className="sidebar-footer account-footer"><div><strong>{currentUser.name}</strong><small>{currentUser.role}</small></div><button className="secondary-button" onClick={() => void logout()}>Sair</button>{accountError && <p role="alert" className="form-error">{accountError}</p>}</div>
       </aside>
       {inventorySection && <main id="main">
-        <header className="page-header"><h1>Gestão de produtos<span>.</span></h1></header>
+        <Pastilles key={inventorySection.screen} tab={inventorySection.screen}>
         <nav className="catalog-sections" aria-label="Seções de produtos">{sections.map(section =>
           <a key={section.hash} href={section.hash} aria-current={inventorySection === section ? 'page' : undefined}>
             {section.label}
           </a>
         )}</nav>
-        <Pastilles key={inventorySection.screen} tab={inventorySection.screen} />
+        </Pastilles>
       </main>}
       {isAdmin && <Users hidden={screen !== 'users'} users={users} setUsers={setUsers} refreshSession={refreshSession} />}
-      {isAdmin && screen === 'reports' && <PastilleReport />}
-      {isAdmin && screen === 'legacyReports' && (inventoryReady ? <Reports products={archive.products} categories={archive.categories} /> : <main>{legacyStatus}</main>)}
+      {isAdmin && screen === 'legacyReports' && <main id="reports">
+        <PageHeader section="Metadados" title="Metadados" description="Consulte a distribuição das pastilhas por categoria e as movimentações mensais." />
+        <Reports products={archive?.products ?? []} categories={archive?.categories ?? []} archiveStatus={inventoryReady ? null : legacyStatus} />
+      </main>}
     </div>
   )
 }

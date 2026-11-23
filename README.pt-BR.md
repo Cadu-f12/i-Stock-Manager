@@ -29,7 +29,7 @@ Use **Sair** para encerrar o acesso. Quando a sessão expirar, entre novamente.
 
 ### Pastilhas e movimentações
 
-Em **Produtos**, selecione **Nova pastilha** e informe SKU, fabricante e estoque mínimo. Marque os fornecedores cadastrados que atendem a pastilha. Os nomes aparecem na tabela de estoque. Use a busca, os filtros, a ordenação e a paginação para localizar o item. As seções **Fabricantes** e **Fornecedores** permitem manter os contatos.
+Em **Produtos**, selecione **Nova pastilha** e informe SKU, fabricante e estoque mínimo. Cadastre categorias na aba **Categorias** e escolha uma ao criar ou editar a pastilha. Marque os fornecedores cadastrados que atendem a pastilha. Os nomes aparecem na tabela de estoque. Use a busca, os filtros, a ordenação e a paginação para localizar o item. As seções **Fabricantes** e **Fornecedores** permitem manter os contatos.
 
 O cadastro inicia com saldo zero. Use **+** ou **−**, selecione o motivo e informe a quantidade. Consulte o responsável e a data em **Histórico**. O filtro de alerta inclui saldos até cinco unidades acima do mínimo.
 
@@ -41,14 +41,14 @@ Você não pode excluir ou desativar sua própria conta nem remover seu próprio
 
 ### Relatórios
 
-Como Admin, abra **Relatórios anteriores**. O gráfico por categoria conta produtos, inclusive aqueles com saldo zero. Os totais mensais somam unidades de entradas e saídas explícitas, agrupadas pelo horário de São Paulo. Use os filtros de ano, categoria e produto para restringir a visão mensal.
+Como Admin, abra **Metadados**. O gráfico por categoria conta as pastilhas atuais e lista também as categorias cadastradas sem pastilhas. Os totais mensais somam unidades de entradas e saídas explícitas, agrupadas pelo horário de São Paulo. Em **Entradas e saídas por mês**, selecione **Pastilhas** ou **Estoque anterior** para consultar cada estoque separadamente. Use os filtros de ano, categoria e produto para restringir a visão mensal.
 
 Cadastrar um produto ou editar diretamente sua quantidade não conta como entrada ou saída no gráfico mensal. Os filtros de categoria consideram a categoria atual de cada produto.
 
 ## Limitações atuais e ajuda
 
 - Não há exclusão de produtos nem exportação de relatórios na interface.
-- O menu **Relatórios** soma entradas e saídas de pastilhas por mês. Os registros do estoque anterior permanecem preservados e seus totais podem ser consultados em **Relatórios anteriores**.
+- **Metadados** reúne as movimentações mensais de pastilhas e os gráficos do estoque anterior em uma única página.
 - Se o servidor estiver indisponível, contate o responsável pela aplicação. Se uma gravação conflitar com outra alteração, recarregue o estoque; se a sessão expirar, entre novamente.
 
 ## Outras documentações

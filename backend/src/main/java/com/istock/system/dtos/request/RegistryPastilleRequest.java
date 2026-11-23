@@ -24,5 +24,6 @@ public record RegistryPastilleRequest(
         Long manufacturerId,
 
         @JsonProperty("supplier_ids")
-        Set<@NotNull @Positive Long> supplierIds
+        Set<@NotNull @Positive Long> supplierIds,
+        @jakarta.validation.Valid CategorySelection category
 ) {}
