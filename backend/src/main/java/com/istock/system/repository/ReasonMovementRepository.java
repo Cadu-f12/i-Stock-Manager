@@ -5,9 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ReasonMovementRepository extends JpaRepository<ReasonMovement, Long> {
+
+    List<ReasonMovement> findAllByIsActive(Boolean isActive);
 
     @Query("SELECT r FROM ReasonMovement r WHERE r.id = :id AND r.isActive = true")
     Optional<ReasonMovement> findActiveById(@Param("id") Long id);

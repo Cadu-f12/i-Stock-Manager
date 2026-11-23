@@ -1,6 +1,8 @@
 package com.istock.system.service;
 
 import com.istock.system.dtos.response.ReasonMovementDTO;
+import com.istock.system.entities.ReasonMovement;
+import com.istock.system.exception.ReasonMovementNotFound;
 import com.istock.system.mapper.ReasonMovementMapper;
 import com.istock.system.repository.ReasonMovementRepository;
 import org.springframework.stereotype.Service;
@@ -23,10 +25,22 @@ public class ReasonMovementService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReasonMovementDTO> findAll() {
-        return reasonMovementRepository.findAll()
+    public List<ReasonMovementDTO> findAll(Boolean isActive) {
+        return (isActive == null
+                ? reasonMovementRepository.findAll()
+                : reasonMovementRepository.findAllByIsActive(isActive))
                 .stream()
                 .map(reasonMovementMapper::toReasonMovementDTO)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ReasonMovementDTO findById(Long id) {
+        ReasonMovement reasonMovement = reasonMovementRepository.findById(id)
+                .orElseThrow(() -> new ReasonMovementNotFound(
+                        "Movement reason with ID '" + id + "' was not found."
+                ));
+
+        return reasonMovementMapper.toReasonMovementDTO(reasonMovement);
     }
 }
