@@ -1,6 +1,7 @@
 package com.istock.system.service;
 
 import com.istock.system.dtos.request.CreateReasonMovementRequest;
+import com.istock.system.dtos.request.UpdateReasonMovementRequest;
 import com.istock.system.dtos.response.ReasonMovementDTO;
 import com.istock.system.entities.ReasonMovement;
 import com.istock.system.exception.ReasonMovementNotFound;
@@ -41,13 +42,29 @@ public class ReasonMovementService {
         return reasonMovementMapper.toReasonMovementDTO(reasonMovementRepository.save(reasonMovement));
     }
 
+    @Transactional
+    public ReasonMovementDTO updateById(Long id, UpdateReasonMovementRequest request) {
+        ReasonMovement reasonMovement = requireReasonMovement(id);
+        reasonMovementMapper.updateEntity(reasonMovement, request);
+        return reasonMovementMapper.toReasonMovementDTO(reasonMovementRepository.save(reasonMovement));
+    }
+
+    @Transactional
+    public void deactivateById(Long id) {
+        ReasonMovement reasonMovement = requireReasonMovement(id);
+        reasonMovement.setActive(false);
+        reasonMovementRepository.save(reasonMovement);
+    }
+
     @Transactional(readOnly = true)
     public ReasonMovementDTO findById(Long id) {
-        ReasonMovement reasonMovement = reasonMovementRepository.findById(id)
+        return reasonMovementMapper.toReasonMovementDTO(requireReasonMovement(id));
+    }
+
+    private ReasonMovement requireReasonMovement(Long id) {
+        return reasonMovementRepository.findById(id)
                 .orElseThrow(() -> new ReasonMovementNotFound(
                         "Movement reason with ID '" + id + "' was not found."
                 ));
-
-        return reasonMovementMapper.toReasonMovementDTO(reasonMovement);
     }
 }
