@@ -1,5 +1,6 @@
 package com.istock.system.service;
 
+import com.istock.system.dtos.request.CreateReasonMovementRequest;
 import com.istock.system.dtos.response.ReasonMovementDTO;
 import com.istock.system.entities.ReasonMovement;
 import com.istock.system.exception.ReasonMovementNotFound;
@@ -32,6 +33,12 @@ public class ReasonMovementService {
                 .stream()
                 .map(reasonMovementMapper::toReasonMovementDTO)
                 .toList();
+    }
+
+    @Transactional
+    public ReasonMovementDTO create(CreateReasonMovementRequest request) {
+        ReasonMovement reasonMovement = reasonMovementMapper.toEntity(request);
+        return reasonMovementMapper.toReasonMovementDTO(reasonMovementRepository.save(reasonMovement));
     }
 
     @Transactional(readOnly = true)
