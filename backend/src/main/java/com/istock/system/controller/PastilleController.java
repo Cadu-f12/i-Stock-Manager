@@ -65,4 +65,14 @@ public class PastilleController {
     public ResponseEntity<PastilleDTO> updateById(@PathVariable Long id, @RequestBody @Valid UpdatePastilleRequest pastilleRequest) {
         return ResponseEntity.ok(pastilleService.updateById(id, pastilleRequest));
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a pastille and its movement history")
+    @ApiResponse(responseCode = "204", description = "Pastille and related movements deleted")
+    @ApiResponse(responseCode = "401", description = "Authentication required")
+    @ApiResponse(responseCode = "404", description = "Pastille not found", content = @Content(schema = @Schema(implementation = com.istock.system.dtos.response.ApiError.class)))
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+        pastilleService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }

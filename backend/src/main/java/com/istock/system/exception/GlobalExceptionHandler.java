@@ -23,7 +23,8 @@ public class GlobalExceptionHandler {
                 "skuCode", "sku_code",
                 "minimumStockLevel", "minimum_stock_level",
                 "manufacturerId", "manufacturer_id",
-                "currentBalance", "current_balance"
+                "currentBalance", "current_balance",
+                "isActive", "is_active"
         );
         List<FieldError> fields = ex.getBindingResult().getFieldErrors().stream()
                 .map(fieldError -> new FieldError(

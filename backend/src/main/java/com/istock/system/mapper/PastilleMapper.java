@@ -12,6 +12,12 @@ import java.util.List;
 @Component
 public class PastilleMapper {
 
+    private final ReasonMovementMapper reasonMovementMapper;
+
+    public PastilleMapper(ReasonMovementMapper reasonMovementMapper) {
+        this.reasonMovementMapper = reasonMovementMapper;
+    }
+
     public PastilleListDTO toListDTO(Pastille pastille) {
         return new PastilleListDTO(
                 pastille.getId(),
@@ -77,11 +83,7 @@ public class PastilleMapper {
                         movement.getId(),
                         movement.getQuantity(),
                         movement.getDateTime(),
-                        new ReasonMovementDTO(
-                                movement.getReasonMovement().getId(),
-                                movement.getReasonMovement().getDescription(),
-                                movement.getReasonMovement().getType()
-                        ),
+                        reasonMovementMapper.toReasonMovementDTO(movement.getReasonMovement()),
                         new UserDTO(
                                 movement.getUser().getId(),
                                 movement.getUser().getName()
