@@ -51,27 +51,31 @@ public class PastilleMapper {
                 manufacturer.getName(),
                 manufacturer.getContact(),
                 manufacturer.getActive(),
-                manufacturer.getPastilles().stream()
-                        .map(this::toListDTO)
-                        .toList()
+                toPastilleListDTO(manufacturer.getPastilles())
         );
     }
 
     private List<SupplierResponseDTO> toSupplierListDTO(List<Supplier> suppliers) {
+        if (suppliers == null) {
+            return List.of();
+        }
+
         return suppliers.stream()
                 .map(supplier -> new SupplierResponseDTO(
                         supplier.getId(),
                         supplier.getName(),
                         supplier.getContact(),
                         supplier.getActive(),
-                        supplier.getPastilles().stream()
-                                .map(this::toListDTO)
-                                .toList()
+                        toPastilleListDTO(supplier.getPastilles())
                 ))
                 .toList();
     }
 
     private List<MovementDTO> toMovementList(List<Movement> movements) {
+        if (movements == null) {
+            return List.of();
+        }
+
         return movements.stream()
                 .map(movement -> new MovementDTO(
                         movement.getId(),
@@ -87,6 +91,16 @@ public class PastilleMapper {
                                 movement.getUser().getName()
                         )
                 ))
+                .toList();
+    }
+
+    private List<PastilleListDTO> toPastilleListDTO(List<Pastille> pastilles) {
+        if (pastilles == null) {
+            return List.of();
+        }
+
+        return pastilles.stream()
+                .map(this::toListDTO)
                 .toList();
     }
 }

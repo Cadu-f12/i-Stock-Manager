@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+import java.util.List;
+
 public record RegistryPastilleRequest(
         @NotBlank(message = "SKU code must not be blank.")
         @JsonProperty("sku_code")
@@ -19,5 +21,8 @@ public record RegistryPastilleRequest(
 
         @Positive(message = "Manufacturer ID must be greater than zero.")
         @JsonProperty("manufacturer_id")
-        Long manufacturerId
+        Long manufacturerId,
+
+        @JsonProperty("supplier_ids")
+        List<@Positive(message = "Supplier IDs must be greater than zero.") Long> supplierIds
 ) {}

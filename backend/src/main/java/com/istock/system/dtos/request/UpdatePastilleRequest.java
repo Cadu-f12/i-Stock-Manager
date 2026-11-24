@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
+import java.util.List;
+
 public record UpdatePastilleRequest(
         @NotNull(message = "Description must not be null.")
         @Size(max = 255, message = "Description must not exceed 255 characters.")
@@ -19,5 +21,8 @@ public record UpdatePastilleRequest(
         @JsonProperty("minimum_stock_level")
         @PositiveOrZero(message = "Minimum stock level must be zero or greater.")
         @NotNull(message = "Minimum stock level must not be null.")
-        Integer minimumStockLevel
+        Integer minimumStockLevel,
+
+        @JsonProperty("supplier_ids")
+        List<@Positive(message = "Supplier IDs must be greater than zero.") Long> supplierIds
 ) {}

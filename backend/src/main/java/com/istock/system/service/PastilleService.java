@@ -5,12 +5,15 @@ import com.istock.system.dtos.request.UpdatePastilleRequest;
 import com.istock.system.dtos.response.*;
 import com.istock.system.entities.Manufacturer;
 import com.istock.system.entities.Pastille;
+import com.istock.system.entities.Supplier;
 import com.istock.system.exception.ManufacturerNotFound;
 import com.istock.system.exception.PastilleAlreadyExists;
 import com.istock.system.exception.PastilleNotFound;
+import com.istock.system.exception.SupplierNotFound;
 import com.istock.system.mapper.PastilleMapper;
 import com.istock.system.repository.ManufacturerRepository;
 import com.istock.system.repository.PastilleRepository;
+import com.istock.system.repository.SupplierRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,15 +25,18 @@ public class PastilleService {
 
     private final PastilleRepository pastilleRepository;
     private final ManufacturerRepository manufacturerRepository;
+    private final SupplierRepository supplierRepository;
     private final PastilleMapper mapper;
 
     public PastilleService(
             PastilleRepository pastilleRepository,
             ManufacturerRepository manufacturerRepository,
+            SupplierRepository supplierRepository,
             PastilleMapper mapper
     ) {
         this.pastilleRepository = pastilleRepository;
         this.manufacturerRepository = manufacturerRepository;
+        this.supplierRepository = supplierRepository;
         this.mapper = mapper;
     }
 
@@ -71,7 +77,7 @@ public class PastilleService {
                 body.minimumStockLevel(),
                 0,
                 manufacturer,
-                new ArrayList<>(),
+                findSuppliers(body.supplierIds()),
                 new ArrayList<>()
         ));
 
@@ -102,7 +108,21 @@ public class PastilleService {
         pastille.setDescription(pastilleRequest.description());
         pastille.setManufacturer(manufacturer);
         pastille.setMinimumStockLevel(pastilleRequest.minimumStockLevel());
+        pastille.setSuppliers(findSuppliers(pastilleRequest.supplierIds()));
 
         return mapper.toDTO(pastille);
+    }
+
+    private List<Supplier> findSuppliers(List<Long> supplierIds) {
+        if (supplierIds == null || supplierIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Long> distinctIds = supplierIds.stream().distinct().toList();
+        List<Supplier> suppliers = supplierRepository.findAllById(distinctIds);
+        if (suppliers.size() != distinctIds.size()) {
+            throw new SupplierNotFound("One or more supplier IDs were not found.");
+        }
+        return new ArrayList<>(suppliers);
     }
 }

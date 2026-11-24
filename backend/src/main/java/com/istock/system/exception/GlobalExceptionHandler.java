@@ -23,6 +23,7 @@ public class GlobalExceptionHandler {
                 "skuCode", "sku_code",
                 "minimumStockLevel", "minimum_stock_level",
                 "manufacturerId", "manufacturer_id",
+                "supplierIds", "supplier_ids",
                 "currentBalance", "current_balance"
         );
         List<FieldError> fields = ex.getBindingResult().getFieldErrors().stream()
@@ -85,6 +86,17 @@ public class GlobalExceptionHandler {
         ApiError error = new ApiError(
                 HttpStatus.NOT_FOUND.value(),
                 "PASTILLE_NOT_FOUND",
+                ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(SupplierNotFound.class)
+    public ResponseEntity<ApiError> handleSupplierNotFound(SupplierNotFound ex) {
+        ApiError error = new ApiError(
+                HttpStatus.NOT_FOUND.value(),
+                "SUPPLIER_NOT_FOUND",
                 ex.getMessage()
         );
 
