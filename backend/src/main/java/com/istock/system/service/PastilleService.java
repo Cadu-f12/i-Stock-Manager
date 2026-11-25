@@ -9,6 +9,7 @@ import com.istock.system.exception.ManufacturerNotFound;
 import com.istock.system.exception.PastilleAlreadyExists;
 import com.istock.system.exception.PastilleNotFound;
 import com.istock.system.mapper.PastilleMapper;
+import com.istock.system.repository.MovementRepository;
 import com.istock.system.repository.ManufacturerRepository;
 import com.istock.system.repository.PastilleRepository;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class PastilleService {
     private final ManufacturerRepository manufacturerRepository;
     private final SupplierRepository supplierRepository;
     private final PastilleCategoryRepository categories;
+    private final MovementRepository movements;
     private final PastilleMapper mapper;
 
     public PastilleService(
@@ -38,12 +40,14 @@ public class PastilleService {
             ManufacturerRepository manufacturerRepository,
             SupplierRepository supplierRepository,
             PastilleCategoryRepository categories,
+            MovementRepository movements,
             PastilleMapper mapper
     ) {
         this.pastilleRepository = pastilleRepository;
         this.manufacturerRepository = manufacturerRepository;
         this.supplierRepository = supplierRepository;
         this.categories = categories;
+        this.movements = movements;
         this.mapper = mapper;
     }
 
@@ -137,5 +141,15 @@ public class PastilleService {
         pastille.setMinimumStockLevel(pastilleRequest.minimumStockLevel());
 
         return mapper.toDTO(pastille);
+    }
+
+    @Transactional
+    public void deleteById(Long id) {
+        Pastille pastille = pastilleRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new PastilleNotFound("Pastille with ID '" + id + "' was not found."));
+        pastille.getSuppliers().clear();
+        pastilleRepository.flush();
+        movements.deleteAllByPastilleId(id);
+        pastilleRepository.delete(pastille);
     }
 }

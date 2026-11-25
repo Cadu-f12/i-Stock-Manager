@@ -29,7 +29,11 @@ Use **Sair** to sign out. When your session expires, sign in again.
 
 ### Cutting inserts and stock movements
 
-In **Produtos**, select **Nova pastilha** and enter the SKU, manufacturer and minimum stock. Create categories under **Categorias** and choose one when creating or editing an insert. Select any registered suppliers that provide the insert. Their names appear in the stock table. Use search, availability and alert filters, sorting and pagination to locate an item. Manage contacts under **Fabricantes** and **Fornecedores**.
+In **Produtos**, select **Nova pastilha** and enter the SKU, manufacturer and minimum stock. Under **Categorias**, the trash icon lets you delete an empty category after confirmation. Create categories under **Categorias** and choose one when creating or editing an insert. Select any registered suppliers that provide the insert. Their names appear in the stock table. Use search, availability and alert filters, sorting and pagination to locate an item. Under **Fabricantes** and **Fornecedores**, click the trash icon in the **Operações** column to delete an unlinked contact after confirmation. Reassign the manufacturer or remove the supplier from linked inserts first.
+
+Under **Produtos → Motivos de movimentação**, create reasons for incoming or outgoing stock. Edit a reason to rename or reactivate it. Deactivation preserves past movements. In the inserts list, **Excluir pastilha** permanently removes the selected insert and its movements after confirmation, including their contribution to reports.
+
+For a one-time stock entry, click **+**, choose **Entrada - Customizada**, and enter the reason below the selector. The text appears only in that movement’s history.
 
 Each new insert starts with zero units. Use **+** or **−**, choose a reason and enter the quantity. Open **Histórico** to see the operator and date. The alert filter includes balances up to five units above minimum.
 
@@ -47,7 +51,7 @@ Creating a product or directly editing its quantity does not count as an entry o
 
 ## Current limitations and help
 
-- There is no product deletion or report export in the interface.
+- Report export is unavailable.
 - **Metadados** brings monthly insert movements and historical inventory charts together on one page.
 - If the server is unavailable, contact whoever runs the application. If a save conflicts with another change, reload the inventory; if the session expires, sign in again.
 

@@ -47,11 +47,7 @@ public class UserMapper {
                             movement.getUser().getName()
                     );
 
-                    ReasonMovementDTO reasonDTO = new ReasonMovementDTO(
-                            movement.getReasonMovement().getId(),
-                            movement.getReasonMovement().getDescription(),
-                            movement.getReasonMovement().getType()
-                    );
+                    ReasonMovementDTO reasonDTO = ReasonMovementDTO.from(movement);
 
                     return new MovementDTO(
                             movement.getId(),

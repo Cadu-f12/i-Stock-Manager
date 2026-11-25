@@ -145,3 +145,16 @@ dialog .pastille-suppliers label { display: flex; align-items: center; gap: 8px;
 }
 
 .report-year input { width: 8rem; min-height: 36px; padding: 8px 12px; border: 1px solid var(--border); background: var(--surface); }
+
+.reason-status-filter {
+  display: inline-flex;
+  align-items: center;
+}
+
+.reason-status-filter > select {
+  margin-inline-start: 20px;
+}
+
+
+.row-actions { align-items: center; }
+.row-actions button:disabled { color: var(--text-muted); cursor: not-allowed; }

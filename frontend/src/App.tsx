@@ -12,6 +12,7 @@ import type { Inventory } from './inventoryData'
 
 const sections = [
   { hash: '#produtos', screen: 'pastilles', label: 'Pastilhas' },
+  { hash: '#motivos', screen: 'reasons', label: 'Motivos de movimentação' },
   { hash: '#categorias', screen: 'categories', label: 'Categorias' },
   { hash: '#fabricantes', screen: 'manufacturer', label: 'Fabricantes' },
   { hash: '#fornecedores', screen: 'supplier', label: 'Fornecedores' },

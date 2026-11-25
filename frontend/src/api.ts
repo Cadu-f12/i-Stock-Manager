@@ -12,7 +12,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   return request<T>(`/api${path}`, options)
 }
 
-type DomainResource = '/pastilles' | '/movement' | '/manufacturer' | '/supplier'
+type DomainResource = '/reason-movement' | '/pastilles' | '/movement' | '/manufacturer' | '/supplier'
 type DomainPath = DomainResource | `${DomainResource}/${string}` | `${DomainResource}?${string}`
 
 export function domainApi<T>(path: DomainPath, options: RequestInit = {}): Promise<T> {

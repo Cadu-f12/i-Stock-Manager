@@ -85,11 +85,7 @@ public class PastilleMapper {
                         movement.getId(),
                         movement.getQuantity(),
                         movement.getDateTime(),
-                        new ReasonMovementDTO(
-                                movement.getReasonMovement().getId(),
-                                movement.getReasonMovement().getDescription(),
-                                movement.getReasonMovement().getType()
-                        ),
+                        ReasonMovementDTO.from(movement),
                         new UserDTO(
                                 movement.getUser().getId(),
                                 movement.getUser().getName()

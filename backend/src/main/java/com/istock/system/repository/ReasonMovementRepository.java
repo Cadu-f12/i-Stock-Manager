@@ -17,4 +17,5 @@ public interface ReasonMovementRepository extends JpaRepository<ReasonMovement, 
     @Query("SELECT r FROM ReasonMovement r WHERE r.id = :id AND r.isActive = true")
     Optional<ReasonMovement> findActiveById(@Param("id") Long id);
 
+    List<ReasonMovement> findAllByIsActive(Boolean active);
 }

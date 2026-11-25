@@ -29,7 +29,11 @@ Use **Sair** para encerrar o acesso. Quando a sessão expirar, entre novamente.
 
 ### Pastilhas e movimentações
 
-Em **Produtos**, selecione **Nova pastilha** e informe SKU, fabricante e estoque mínimo. Cadastre categorias na aba **Categorias** e escolha uma ao criar ou editar a pastilha. Marque os fornecedores cadastrados que atendem a pastilha. Os nomes aparecem na tabela de estoque. Use a busca, os filtros, a ordenação e a paginação para localizar o item. As seções **Fabricantes** e **Fornecedores** permitem manter os contatos.
+Em **Produtos**, selecione **Nova pastilha** e informe SKU, fabricante e estoque mínimo. Na aba **Categorias**, a lixeira permite excluir uma categoria sem pastilhas após confirmação. Cadastre categorias na aba **Categorias** e escolha uma ao criar ou editar a pastilha. Marque os fornecedores cadastrados que atendem a pastilha. Os nomes aparecem na tabela de estoque. Use a busca, os filtros, a ordenação e a paginação para localizar o item. Em **Fabricantes** e **Fornecedores**, clique no ícone de lixeira na coluna **Operações** e confirme para excluir um cadastro sem vínculos. Se houver pastilhas vinculadas, altere o fabricante ou remova o fornecedor na edição das pastilhas primeiro.
+
+Em **Produtos → Motivos de movimentação**, cadastre motivos de entrada ou saída. Edite um motivo para renomeá-lo ou reativá-lo. A desativação preserva as movimentações anteriores. Na lista de pastilhas, **Excluir pastilha** remove definitivamente a pastilha e suas movimentações após confirmação, inclusive dos relatórios.
+
+Para registrar uma entrada com motivo de uso único, clique em **+**, selecione **Entrada - Customizada** e escreva o motivo abaixo do seletor. O texto fica no histórico daquela movimentação.
 
 O cadastro inicia com saldo zero. Use **+** ou **−**, selecione o motivo e informe a quantidade. Consulte o responsável e a data em **Histórico**. O filtro de alerta inclui saldos até cinco unidades acima do mínimo.
 
@@ -47,7 +51,7 @@ Cadastrar um produto ou editar diretamente sua quantidade não conta como entrad
 
 ## Limitações atuais e ajuda
 
-- Não há exclusão de produtos nem exportação de relatórios na interface.
+- A exportação de relatórios está indisponível.
 - **Metadados** reúne as movimentações mensais de pastilhas e os gráficos do estoque anterior em uma única página.
 - Se o servidor estiver indisponível, contate o responsável pela aplicação. Se uma gravação conflitar com outra alteração, recarregue o estoque; se a sessão expirar, entre novamente.
 

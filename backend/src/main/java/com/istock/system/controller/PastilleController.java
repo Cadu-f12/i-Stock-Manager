@@ -65,4 +65,11 @@ public class PastilleController {
     public ResponseEntity<PastilleDTO> updateById(@PathVariable Long id, @RequestBody @Valid UpdatePastilleRequest pastilleRequest) {
         return ResponseEntity.ok(pastilleService.updateById(id, pastilleRequest));
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a pastille and its movement history")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable Long id) {
+        pastilleService.deleteById(id);
+    }
 }

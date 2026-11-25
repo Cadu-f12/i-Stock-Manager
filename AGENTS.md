@@ -9,7 +9,7 @@ O público principal é a equipe que consulta e movimenta o estoque e os adminis
 ## Escopo e continuidade entre tarefas
 
 - **Implementado:** autenticação e perfis, pastilhas, fabricantes e fornecedores, entradas/saídas, histórico, pesquisa/filtros/paginação, administração de usuários e relatórios de estoque.
-- **Estoque de pastilhas:** Produtos usa uma única listagem de pastilhas em #produtos (também acessível por #estoque), com seções auxiliares de categorias, fabricantes e fornecedores. Uma pastilha aceita zero ou mais fornecedores cadastrados. Pastilles.tsx consome as rotas de domínio para cadastros, alertas, movimentações e histórico. Metadados (#relatorios-produtos, também acessível por #relatorios) usa um único gráfico mensal (MonthlyChart.tsx), com seleção de origem: PastilleReport.tsx agrega movimentações de pastilhas e Reports.tsx agrega o histórico anterior. Produtos por categoria usa o catálogo atual de pastilhas e inclui categorias vazias na legenda. Na interface, apenas Metadados lê inventory_*. Todas as operações de estoque usam /pastilles e /movement.
+- **Estoque de pastilhas:** Produtos usa uma única listagem de pastilhas em #produtos (também acessível por #estoque), com seções auxiliares de categorias, fabricantes e fornecedores. Uma pastilha aceita zero ou mais fornecedores cadastrados. A exclusão de categoria de pastilhas, fabricante ou fornecedor exige ausência de pastilhas vinculadas. Pastilles.tsx consome as rotas de domínio para cadastros, alertas, movimentações e histórico. Metadados (#relatorios-produtos, também acessível por #relatorios) usa um único gráfico mensal (MonthlyChart.tsx), com seleção de origem: PastilleReport.tsx agrega movimentações de pastilhas e Reports.tsx agrega o histórico anterior. Produtos por categoria usa o catálogo atual de pastilhas e inclui categorias vazias na legenda. Na interface, apenas Metadados lê inventory_*. Todas as operações de estoque usam /pastilles e /movement.
 - **Pendências, não autorização:** unificar os estoques, integrar o modelo legado ou preparar produção exige uma solicitação que inclua esse trabalho e análise de impacto. Não transformar pendências em tarefas implícitas.
 - **Limite de expansão:** não ampliar o produto para outros domínios ou substituir sua arquitetura por preferência do agente. Relacione cada mudança solicitada ao objetivo do estoque e preserve o restante do escopo.
 
@@ -72,6 +72,7 @@ Fluxo da API anterior /api/inventory: login fornece JWT; frontend consulta perfi
 
 ### Estoque e histórico
 
+- `DELETE /pastilles/{id}` exclui o saldo e o histórico dessa pastilha sob lock e na mesma transação. A interface pede confirmação explícita. `DELETE /reason-movement/{id}` apenas desativa o motivo; a edição pode reativá-lo e preserva o tipo. Movimentações por ID exigem motivo ativo. Uma entrada também aceita texto de uso único em `movement.custom_reason`, com `reason_movement_id` nulo. O texto pertence ao movimento e nunca integra o catálogo. Na inicialização, `MovementReasonSchemaUpdate` torna a chave de motivo opcional em bases antigas antes do seed.
 - `InventoryService.quantity/move`: saldo inteiro de 0 a 999999999; movimentos positivos inteiros até esse limite. Não permitir saldo negativo nem estouro do limite.
 - `checkVersion` e `InventoryProduct.@Version`: edição e movimentação exigem versão atual; conflito retorna 409. Não remover o controle de concorrência nem sobrescrever silenciosamente versões obsoletas.
 - `save`: nome de produto até 120 caracteres; categoria até 60 em `createCategory`; aparar e condensar espaços. Edição sem alteração não cria evento.
@@ -99,7 +100,7 @@ Fluxo da API anterior /api/inventory: login fornece JWT; frontend consulta perfi
 - MySQL em `mysql_data` e H2 em `backend/.local` são bases independentes. Não apagar dados para resolver erro de ambiente; planejar backup/migração para alterações de esquema.
 - `ddl-auto=update` não equivale a migração versionada. Flyway existe como dependência, mas não há scripts de migração identificados.
 - Não versionar `.env`, chaves, tokens, dados locais ou dumps privados. Não reproduzir os valores fixos do perfil `local` em documentação. Separar sua correção de tarefas exclusivamente documentais.
-- Preserve os formatos JSON e rotas enumerados em `DESENVOLVIMENTO.md`, inclusive `version`, nomes de papéis e erros com `message`. Não inventar endpoint de exclusão de produto, refresh token ou exportação de relatórios.
+- Preserve os formatos JSON e rotas enumerados em `DESENVOLVIMENTO.md`, inclusive `version`, nomes de papéis e erros com `message`. A exclusão de pastilha pertence ao domínio `/pastilles`. Não inventar refresh token ou exportação de relatórios.
 
 ## Validação por área
 

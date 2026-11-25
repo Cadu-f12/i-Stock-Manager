@@ -116,6 +116,8 @@ docker compose config --quiet
 docker compose up -d --build --wait --wait-timeout 240
 ```
 
+No Docker, o Vite verifica periodicamente os arquivos montados para detectar alterações do frontend feitas pelo Windows. Após mudar a configuração do serviço, execute `docker compose up -d --no-deps --force-recreate frontend`.
+
 O Compose aguarda o MySQL ficar pronto, inicia a API e depois o frontend. A primeira construção baixa dependências e pode levar alguns minutos. Os serviços ficam em segundo plano; você pode fechar o terminal.
 
 Acesse **http://127.0.0.1:5173**. Login inicial de desenvolvimento:
@@ -221,15 +223,26 @@ Corpos e respostas são JSON. Login público; demais chamadas exigem `Authorizat
 | `POST /api/inventory/categories` | `{name}` → `{name}` |
 | `DELETE /api/inventory/categories?name=...` | Nome codificado para URL → estoque atualizado |
 
-Produto: `{id,version,name,category,quantity,updatedAt,history}`. `updatedAt` é data `YYYY-MM-DD`; cada histórico contém `{author,userId,at,changes}`, com instante ISO e lista de descrições. Histórico mais recente primeiro. Não há endpoint de exclusão de produto nem paginação no servidor.
+Produto: `{id,version,name,category,quantity,updatedAt,history}`. `updatedAt` é data `YYYY-MM-DD`; cada histórico contém `{author,userId,at,changes}`, com instante ISO e lista de descrições. Histórico mais recente primeiro. A API anterior `/api/inventory` não oferece exclusão de produto nem paginação no servidor.
 
 `ApiErrors` converte validações em 400, ausências em 404 e conflitos de saldo, categoria, duplicidade ou versão em 409, com `{message}`. A segurança responde 401/403 com `{status,error,message}`. O cliente trata também indisponibilidade 502/503/504 e falha de rede. Em 409, recarregue o estoque antes de tentar salvar novamente.
 
 A API legada exige Admin: `GET /user`, `GET /user/{id}`, `POST /user/createUser`, `POST /user/fetchUser`, `PUT /user/updateUser/{id}`, `DELETE /user/deleteUser/{id}`. Ela usa `UserService`, `UserRequestDTO` e `UserResponseDTO`, com validações diferentes de `AdminUserService`; não pressupor proteção contra autoexclusão nem a mesma política de senhas. A senha tem serialização somente de entrada. Os hashes `#relatorios-produtos` e `#relatorios` abrem a mesma tela administrativa. O gráfico mensal permite selecionar a origem. Para pastilhas, usa a categoria atual em `GET /pastilles` e consulta `GET /movement?from=...&to=...` e os gráficos do estoque anterior consultam `GET /api/inventory`, com carregamento independente.
 
-Os endereços #produtos e #estoque abrem a mesma lista. Fabricantes e fornecedores usam #fabricantes e #fornecedores. Apenas o relatório histórico lê /api/inventory. A tela operacional usa as rotas de domínio pela mesma origem e pelo mesmo cliente JWT. O proxy Vite encaminha /pastilles, /movement, /manufacturer e /supplier ao backend. O formulário consulta `GET /movement/reasons` para listar os motivos ativos (id, description, type).
+Os endereços #produtos e #estoque abrem a mesma lista. Fabricantes e fornecedores usam #fabricantes e #fornecedores. Apenas o relatório histórico lê /api/inventory. A tela operacional usa as rotas de domínio pela mesma origem e pelo mesmo cliente JWT. O proxy Vite encaminha /pastilles, /movement, /reason-movement, /manufacturer e /supplier ao backend. O formulário consulta `GET /reason-movement?is_active=true`. O alias anterior `GET /movement/reasons` continua disponível.
 
-A API de pastilhas oferece `GET /movement` com filtros opcionais `pastille_id`, `user_id`, `type` (IN/OUT), `from` e `to` (datas inclusivas), além de `GET /movement/{id}`. Para registrar, envie `POST /movement` com `{"pastille":1,"reason_movement_id":2,"quantity":3}`, usando IDs existentes. O tipo vem do motivo ativo e o autor vem do JWT. A operação altera o saldo da pastilha na mesma transação do registro.
+| Método e rota | Contrato |
+| --- | --- |
+| GET /reason-movement | Lista motivos; o filtro opcional `is_active=true/false` seleciona a situação. Cada resposta de motivo contém `id`, `description` e `type`. |
+| GET /reason-movement/{id} | Consulta um motivo ativo ou inativo. |
+| POST /reason-movement | Recebe `description` (1 a 80 caracteres, com conteúdo) e `type` (IN/OUT). Cria ativo e retorna 201. |
+| PUT /reason-movement/{id} | Recebe `description` e `is_active` booleano. Preserva o tipo e retorna 200. |
+| DELETE /reason-movement/{id} | Desativa o motivo, preserva o histórico e retorna 204. |
+| DELETE /pastilles/{id} | Bloqueia a pastilha, remove os vínculos com fornecedores, suas movimentações e o cadastro na mesma transação. Retorna 204. Fornecedores, fabricante e categoria permanecem cadastrados. |
+
+A listagem `GET /pastilles/categories` inclui `pastilleCount` por categoria. A opção “Sem categoria” representa um vínculo nulo. As rotas autenticadas `DELETE /pastilles/categories/{id}`, `DELETE /manufacturer/deleteManufacturer/{id}` e `DELETE /supplier/deleteSupplier/{id}` retornam 200 com o cadastro excluído ou 409 quando há pastilhas vinculadas.
+
+A API de pastilhas oferece `GET /movement` com filtros opcionais `pastille_id`, `user_id`, `type` (IN/OUT), `from` e `to` (datas inclusivas), além de `GET /movement/{id}`. Para registrar, envie `POST /movement` com `{"pastille":1,"reason_movement_id":2,"quantity":3}`, usando IDs existentes. O tipo vem do motivo ativo e o autor vem do JWT. Para uma entrada de uso único, envie `{"pastille":1,"custom_reason":"Retorno da bancada","quantity":3}`. Informe exatamente uma das duas formas de motivo. O texto aceita até 80 caracteres e precisa conter conteúdo. A resposta e o histórico retornam `reason: {"id":null,"description":"Retorno da bancada","type":"IN"}`. O catálogo não recebe um registro. A operação altera o saldo da pastilha na mesma transação do registro.
 
 ## Autenticação e usuários
 
@@ -252,9 +265,11 @@ Relatórios são calculados no navegador a partir do estoque completo. O gráfic
 Existem dois modelos sem sincronização:
 
 - `inventory_product`, `inventory_category`, `inventory_product_history`: usados nas telas.
-- `Pastille`, `Movement`, `Manufacturer`, `Supplier`, `ReasonMovement`: modelo legado com SKU, estoque mínimo, fabricantes, fornecedores e motivos. A API autenticada expõe `/pastilles` (cadastro, consulta e edição), `/manufacturer` e `/supplier` (CRUD). O catálogo de categorias de pastilhas usa `GET/POST /pastilles/categories` e `PUT /pastilles/categories/{id}` com `name` de até 60 caracteres. A relação opcional usa `pastilles.category_id` e a tabela `pastille_category`, independente das categorias anteriores. Em `/pastilles`, envie `category: {"id": 1}` para atribuir ou `category: {"id": null}` para remover. Omitir `category` na edição preserva o vínculo. O cadastro e a edição aceitam `supplier_ids` (lista de IDs de fornecedores). Na edição, omitir o campo preserva os vínculos e enviar uma lista vazia remove todos. A listagem retorna os nomes em `suppliers`. O filtro `GET /pastilles?on_alert=true` considera saldo até cinco unidades acima do mínimo. Consulte os contratos em `/swagger-ui.html` ou `/v3/api-docs` no backend.
+- `Pastille`, `Movement`, `Manufacturer`, `Supplier`, `ReasonMovement`: modelo legado com SKU, estoque mínimo, fabricantes, fornecedores e motivos. A API autenticada expõe `/pastilles` (cadastro, consulta, edição e exclusão), `/manufacturer` e `/supplier` (CRUD). O catálogo de categorias de pastilhas usa `GET/POST /pastilles/categories` e `PUT /pastilles/categories/{id}` com `name` de até 60 caracteres. A relação opcional usa `pastilles.category_id` e a tabela `pastille_category`, independente das categorias anteriores. Em `/pastilles`, envie `category: {"id": 1}` para atribuir ou `category: {"id": null}` para remover. Omitir `category` na edição preserva o vínculo. O cadastro e a edição aceitam `supplier_ids` (lista de IDs de fornecedores). Na edição, omitir o campo preserva os vínculos e enviar uma lista vazia remove todos. A listagem retorna os nomes em `suppliers`. O filtro `GET /pastilles?on_alert=true` considera saldo até cinco unidades acima do mínimo. Consulte os contratos em `/swagger-ui.html` ou `/v3/api-docs` no backend.
 
 O seed só executa com `--seed`; Compose e o script Windows fornecem esse argumento por padrão. Preserva a conta inicial quando seu e-mail já existe; completa os cadastros de demonstração ausentes. Se o histórico estiver vazio, gera movimentos apenas para as pastilhas criadas na mesma execução. Não preenche `inventory_*`.
+
+**Atualização de bases existentes para entradas customizadas.** Ao iniciar o backend, o Hibernate prepara a coluna `movement.custom_reason`. Em seguida, `MovementReasonSchemaUpdate` verifica se `reason_movement_id` aceita nulos e ajusta a restrição antiga quando necessário, preservando os vínculos e registros existentes. Essa atualização requer permissão de ALTER no MySQL ou H2. Faça backup antes de atualizar e reinicie o backend para aplicar a mudança.
 
 Hibernate usa `ddl-auto=update`. Flyway consta nas dependências, mas não há scripts de migração versionados identificados. Não há migração automática entre H2 e MySQL nem entre modelos de estoque. Faça backup antes de mudanças de esquema; não remova `mysql_data` ou `backend/.local` como solução para falhas de inicialização.
 

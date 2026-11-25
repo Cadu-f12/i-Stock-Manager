@@ -1,12 +1,11 @@
 package com.istock.system.mapper;
 
-import com.istock.system.dtos.request.RegisterMovementRequest;
+import com.istock.system.dtos.response.ReasonMovementDTO;
 import com.istock.system.dtos.response.MovementPastilleDTO;
 import com.istock.system.dtos.response.MovementReasonDTO;
 import com.istock.system.dtos.response.MovementResponseDTO;
 import com.istock.system.dtos.response.MovementUserDTO;
 import com.istock.system.entities.Movement;
-import com.istock.system.entities.ReasonMovement;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -31,7 +30,8 @@ public class MovementMapper {
                 movement.getPastille().getSkuCode(),
                 movement.getPastille().getDescription()
         );
-        MovementReasonDTO reason = toMovementReasonDTO(movement.getReasonMovement());
+        var details = ReasonMovementDTO.from(movement);
+        MovementReasonDTO reason = new MovementReasonDTO(details.id(), details.description(), details.type());
         MovementUserDTO user = new MovementUserDTO(
                 movement.getUser().getId(),
                 movement.getUser().getName()
@@ -44,14 +44,6 @@ public class MovementMapper {
                 pastille,
                 reason,
                 user
-        );
-    }
-
-    public MovementReasonDTO toMovementReasonDTO(ReasonMovement reasonMovement) {
-        return new MovementReasonDTO(
-                reasonMovement.getId(),
-                reasonMovement.getDescription(),
-                reasonMovement.getType()
         );
     }
 }

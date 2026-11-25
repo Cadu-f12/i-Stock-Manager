@@ -24,6 +24,8 @@ public interface PastilleRepository extends JpaRepository<Pastille, Long> {
     """)
     List<Pastille> findAllOnAlert();
 
+    boolean existsByCategoryId(Long categoryId);
+
     Boolean existsBySkuCode(String skuCode);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
