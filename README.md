@@ -1,194 +1,61 @@
 # DDA Metalúrgica — I-Stock Manager
 
-> Academic software development project focused on improving the management of industrial cutting insert inventory used by **DDA Metalúrgica**, Santa Catarina, Brazil.
+**English** | [Português](README.pt-BR.md)
 
-**🇺🇸 English** | [🇧🇷 Português](README.pt-BR.md)
+I-Stock Manager is a web application for managing the industrial cutting insert inventory used by **DDA Metalúrgica**, in Santa Catarina, Brazil. It centralizes product balances and movement history to help employees keep inventory records up to date and support replenishment decisions.
 
----
+The project was created in an academic context at **SENAI/SC** by Carlos Eduardo, Eliot, Guilherme and Enrico. Its purpose is to improve a workflow based on spreadsheets and manual records, reducing errors and making stock information easier to consult.
 
-## 📌 About the Project
+## Available features
 
-The **DDA Metalúrgica Inventory Management System** is a web application being developed to improve the management of industrial cutting inserts used in the company's machining and manufacturing processes.
+- Register inserts by SKU, manufacturer and minimum stock.
+- Stock entries and withdrawals with an author and change history.
+- Search by ID, SKU, description or manufacturer and filter by alert or availability.
+- Sorting and pages of 50, 100 or 200 products.
+- User administration and inventory reports for administrators.
 
-Currently, DDA Metalúrgica manages its cutting insert inventory through **spreadsheets and manual data entry**. This approach makes it difficult to maintain accurate and up-to-date information, increases the possibility of human error, and can delay the identification of materials that need to be replenished.
+## Access and roles
 
-The proposed solution aims to centralize inventory information in a single system, allowing employees to register, monitor, and track inventory movements more efficiently.
+Open the application address provided by whoever runs the system and sign in with your registered email and password. There is no public account registration. If the application has not been set up, the person responsible can follow [DESENVOLVIMENTO.md](DESENVOLVIMENTO.md).
 
-The project is being developed as part of an academic project at **SENAI/SC — Fraiburgo**.
+| Role | Available actions |
+| --- | --- |
+| Operator | View, register and edit products; record entries/withdrawals; manage manufacturers and suppliers and view history |
+| Admin | All inventory actions, plus user administration and reports |
 
----
+Use **Sair** to sign out. When your session expires, sign in again.
 
-## 🎯 Problem
+## Using the application
 
-DDA Metalúrgica uses several types of industrial cutting inserts, each designed for specific machining applications.
+### Cutting inserts and stock movements
 
-Because these materials are essential to the production process and can have significant consumption, maintaining accurate inventory information is critical.
+In **Produtos**, select **Nova pastilha** and enter the SKU, manufacturer and minimum stock. Under **Categorias**, the trash icon lets you delete an empty category after confirmation. Create categories under **Categorias** and choose one when creating or editing an insert. Select any registered suppliers that provide the insert. Their names appear in the stock table. Use search, availability and alert filters, sorting and pagination to locate an item. Under **Fabricantes** and **Fornecedores**, click the trash icon in the **Operações** column to delete an unlinked contact after confirmation. Reassign the manufacturer or remove the supplier from linked inserts first.
 
-The current spreadsheet-based process presents several challenges:
+Under **Produtos → Motivos de movimentação**, create reasons for incoming or outgoing stock. Edit a reason to rename or reactivate it. Deactivation preserves past movements. In the inserts list, **Excluir pastilha** permanently removes the selected insert and its movements after confirmation, including their contribution to reports.
 
-* Manual registration of inventory movements.
-* Increased risk of human errors.
-* Difficulty keeping inventory information up to date.
-* Limited visibility of current stock levels.
-* Difficulty identifying materials approaching critical stock levels.
-* Delays in identifying replenishment needs.
-* Lack of centralized movement history.
-* Difficulty generating reliable consumption and inventory reports.
+For a one-time stock entry, click **+**, choose **Entrada - Customizada**, and enter the reason below the selector. The text appears only in that movement’s history.
 
-These problems can potentially lead to **material shortages and interruptions in production**.
+Each new insert starts with zero units. Use **+** or **−**, choose a reason and enter the quantity. Open **Histórico** to see the operator and date. The alert filter includes balances up to five units above minimum.
 
----
+### Users
 
-## 💡 Proposed Solution
+As Admin, open **Usuários** to create, view, edit, activate, deactivate or delete accounts. Choose the user's role and status. New passwords require at least 8 characters and at most 72 UTF-8 bytes; leaving the password empty while editing keeps the existing one.
 
-The proposed solution is a **web-based inventory management system** designed specifically for managing industrial cutting inserts.
+You cannot delete or deactivate your own account or remove your own Admin role through this screen. If deletion is blocked by linked records, deactivate the account instead.
 
-The system will centralize inventory data and provide tools for controlling material entries and exits, monitoring minimum stock levels, tracking historical movements, and supporting purchasing decisions.
+### Reports
 
-The application is intended to provide a simple and intuitive interface that allows employees and inventory managers to quickly access reliable information about the current state of the inventory.
+As Admin, open **Metadados**. The category chart counts current inserts and lists registered categories even when they have no inserts. Monthly totals count units from explicit stock entries and withdrawals, grouped by São Paulo time. In **Entradas e saídas por mês**, choose **Pastilhas** or **Estoque anterior** to view each inventory separately. Use the year, category and product filters to narrow the monthly view.
 
----
+Creating a product or directly editing its quantity does not count as an entry or withdrawal in the monthly chart. Category filters reflect each product's current category.
 
-## 🏗️ System Architecture
+## Current limitations and help
 
-The initial architecture is planned around a **web application** using a separated frontend and backend.
+- Report export is unavailable.
+- **Metadados** brings monthly insert movements and historical inventory charts together on one page.
+- If the server is unavailable, contact whoever runs the application. If a save conflicts with another change, reload the inventory; if the session expires, sign in again.
 
-```text
-┌─────────────────────────────┐
-│          Frontend           │
-│          React + Vite       │
-└──────────────┬──────────────┘
-               │
-               │ HTTP / REST API
-               ▼
-┌─────────────────────────────┐
-│           Backend           │
-│       Java + Spring Boot    │
-└──────────────┬──────────────┘
-               │
-               │ Data Access
-               ▼
-┌─────────────────────────────┐
-│          Database           │
-│         MySQL               │
-└─────────────────────────────┘
-```
+## Other documentation
 
-This architecture allows the frontend and backend to evolve independently while communicating through a RESTful API.
-
----
-
-## 🛠️ Technologies
-
-The initial technology stack planned for the project is:
-
-### Backend
-
-* **Java**
-* **Spring Boot**
-* **Spring Data JPA**
-* **Spring Security**
-* **Hibernate**
-* **REST API**
-
-### Frontend
-
-* **Angular**
-* **TypeScript**
-* **HTML**
-* **CSS**
-
-### Database
-
-* **MySQL**
-
-### Development Tools
-
-* **Git**
-* **GitHub**
-* **Maven**
-
----
-
-## 🎓 Academic Context
-
-This project is being developed as an **academic software engineering project** at:
-
-**SENAI/SC — Florianópolis, Santa Catarina, Brazil**
-
-The project provides an opportunity to apply software development concepts to a real-world business problem, including:
-
-* Requirements analysis.
-* Software architecture.
-* Database modeling.
-* Backend development.
-* Frontend development.
-* REST API development.
-* Authentication and authorization.
-* Version control.
-* Testing.
-* Software documentation.
-
----
-
-## 📂 Project Structure
-
-The project is organized as a **full-stack application**, separating the backend and frontend into independent directories.
-
-```text
-i-Stock-Manager/
-│
-├── backend/                    # Application backend
-│   ├── pom.xml                # Maven configuration and dependencies
-│   │
-│   └── src/
-│       ├── main/
-│       │   ├── java/          # Application source code
-│       │   │   └── ...
-│       │   │
-│       │   └── resources/     # Configuration files and resources
-│       │       └── ...
-│       │
-│       └── test/
-│           └── java/          # Automated tests
-│               └── ...
-│
-├── frontend/                   # Application frontend
-│   ├── package.json            # Project dependencies and scripts
-│   ├── vite.config.ts          # Vite configuration
-│   ├── tsconfig.json           # TypeScript configuration
-│   │
-│   └── src/
-│       └── ...                 # User interface source code
-│
-├── mysql_data/                 # Data of mysql volume (Do not remove!)
-│
-├── compose.yaml                # Docker compose file to containers
-│
-├── .env                        # Your environment variables
-├── .env.example                # Keys of variables
-│ 
-└── README.md
-```
-
-The frontend structure and the overall repository organization will be defined as the project architecture evolves.
-
----
-
-## 👥 Development Team
-
-This project is being developed collaboratively by students from **SENAI/SC — Fraiburgo**.
-
-### Team Members
-
-* **Carlos Eduardo**
-* **Eliot**
-* **Guilherme**
-* **Enrico**
-
----
-
-## 🌐 Documentation
-
-* 🇺🇸 **English** — `README.md`
-* 🇧🇷 **Português** — [`README.pt-BR.md`](README.pt-BR.md)
+- [DESENVOLVIMENTO.md](DESENVOLVIMENTO.md): environment setup, Docker, local execution, configuration, architecture, APIs, tests and builds.
+- [AGENTS.md](AGENTS.md): project purpose, scope, maintenance references and rules for AI agents.

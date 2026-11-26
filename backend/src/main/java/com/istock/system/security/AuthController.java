@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 
 @RestController
@@ -36,10 +34,6 @@ public class AuthController {
     @PostMapping("/login")
     @SecurityRequirements
     @Operation(summary = "Log in", description = "Authenticate with email and password. Use the returned token as a Bearer token for protected endpoints.")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Development seed credentials", required = true,
-            content = @Content(mediaType = "application/json", examples = @ExampleObject(
-                    name = "Development administrator",
-                    value = "{\"email\":\"admin@istock.com\",\"password\":\"admin\"}")))
     @ApiResponse(responseCode = "200", description = "Authentication succeeded")
     @ApiResponse(responseCode = "401", description = "Invalid credentials")
     public ResponseEntity<LoginResponse> login(

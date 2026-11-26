@@ -1,5 +1,7 @@
 package com.istock.system.service;
 
+import com.istock.system.dtos.response.MovementReasonDTO;
+
 import com.istock.system.dtos.request.RegisterMovementRequest;
 import com.istock.system.dtos.response.MovementResponseDTO;
 import com.istock.system.entities.Movement;
@@ -28,6 +30,10 @@ import java.util.List;
 
 @Service
 public class MovementService {
+    @Transactional(readOnly = true)
+    public List<MovementReasonDTO> activeReasons() {
+        return reasonMovementRepository.findActiveReasons();
+    }
 
     private final PastilleRepository pastilleRepository;
     private final ReasonMovementRepository reasonMovementRepository;
@@ -82,12 +88,12 @@ public class MovementService {
                 ));
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new UserNotFoundWithEmail(authentication.getName()));
-        ReasonMovement reason = reasonMovementRepository.findActiveById(request.reasonMovementId())
+        ReasonMovement reason = request.reasonMovementId() == null ? null : reasonMovementRepository.findActiveById(request.reasonMovementId())
                 .orElseThrow(() -> new ReasonMovementNotFound(
                         "Active movement reason with ID '" + request.reasonMovementId() + "' was not found."
                 ));
 
-        if (reason.getType().equals(MovementType.IN)) {
+        if (reason == null || reason.getType() == MovementType.IN) {
             pastille.increaseBalance(request.quantity());
         } else {
             if (request.quantity() > pastille.getCurrentBalance()) {
@@ -106,6 +112,7 @@ public class MovementService {
                 LocalDateTime.now()
          );
 
+        if (request.customReason() != null) movement.setCustomReason(request.customReason().strip());
         movement = movementRepository.save(movement);
 
         return mapper.toMovementResponseDTO(movement);

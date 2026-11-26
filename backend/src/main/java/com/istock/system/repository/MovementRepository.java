@@ -2,9 +2,9 @@ package com.istock.system.repository;
 
 import com.istock.system.entities.Movement;
 import com.istock.system.entities.MovementType;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
@@ -12,16 +12,12 @@ import java.util.List;
 
 public interface MovementRepository extends JpaRepository<Movement, Long> {
 
-    @Modifying
-    @Query("DELETE FROM Movement m WHERE m.pastille.id = :pastilleId")
-    int deleteAllByPastilleId(@Param("pastilleId") Long pastilleId);
-
     @Query("""
             SELECT m
-            FROM Movement m
+            FROM Movement m LEFT JOIN m.reasonMovement r
             WHERE (:pastilleId IS NULL OR m.pastille.id = :pastilleId)
               AND (:userId IS NULL OR m.user.id = :userId)
-              AND (:type IS NULL OR m.reasonMovement.type = :type)
+              AND (:type IS NULL OR r.type = :type OR (m.customReason IS NOT NULL AND :type = com.istock.system.entities.MovementType.IN))
               AND (:startDateTime IS NULL OR m.dateTime >= :startDateTime)
               AND (:endDateTimeExclusive IS NULL OR m.dateTime < :endDateTimeExclusive)
             ORDER BY m.dateTime DESC
@@ -33,4 +29,8 @@ public interface MovementRepository extends JpaRepository<Movement, Long> {
             @Param("startDateTime") LocalDateTime startDateTime,
             @Param("endDateTimeExclusive") LocalDateTime endDateTimeExclusive
     );
+
+    @Modifying
+    @Query("DELETE FROM Movement m WHERE m.pastille.id = :pastilleId")
+    int deleteAllByPastilleId(@Param("pastilleId") Long pastilleId);
 }

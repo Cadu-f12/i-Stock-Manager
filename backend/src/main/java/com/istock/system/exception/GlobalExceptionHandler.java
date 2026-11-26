@@ -24,7 +24,10 @@ public class GlobalExceptionHandler {
                 "minimumStockLevel", "minimum_stock_level",
                 "manufacturerId", "manufacturer_id",
                 "currentBalance", "current_balance",
-                "isActive", "is_active"
+                "isActive", "is_active",
+                "customReason", "custom_reason",
+                "reasonSelectionValid", "custom_reason",
+                "reasonMovementId", "reason_movement_id"
         );
         List<FieldError> fields = ex.getBindingResult().getFieldErrors().stream()
                 .map(fieldError -> new FieldError(

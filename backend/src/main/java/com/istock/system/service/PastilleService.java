@@ -9,32 +9,45 @@ import com.istock.system.exception.ManufacturerNotFound;
 import com.istock.system.exception.PastilleAlreadyExists;
 import com.istock.system.exception.PastilleNotFound;
 import com.istock.system.mapper.PastilleMapper;
-import com.istock.system.repository.ManufacturerRepository;
 import com.istock.system.repository.MovementRepository;
+import com.istock.system.repository.ManufacturerRepository;
 import com.istock.system.repository.PastilleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import com.istock.system.dtos.request.CategorySelection;
+import com.istock.system.repository.PastilleCategoryRepository;
+import com.istock.system.entities.Supplier;
+import com.istock.system.repository.SupplierRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class PastilleService {
 
     private final PastilleRepository pastilleRepository;
     private final ManufacturerRepository manufacturerRepository;
-    private final MovementRepository movementRepository;
+    private final SupplierRepository supplierRepository;
+    private final PastilleCategoryRepository categories;
+    private final MovementRepository movements;
     private final PastilleMapper mapper;
 
     public PastilleService(
             PastilleRepository pastilleRepository,
             ManufacturerRepository manufacturerRepository,
-            MovementRepository movementRepository,
+            SupplierRepository supplierRepository,
+            PastilleCategoryRepository categories,
+            MovementRepository movements,
             PastilleMapper mapper
     ) {
         this.pastilleRepository = pastilleRepository;
         this.manufacturerRepository = manufacturerRepository;
-        this.movementRepository = movementRepository;
+        this.supplierRepository = supplierRepository;
+        this.categories = categories;
+        this.movements = movements;
         this.mapper = mapper;
     }
 
@@ -79,7 +92,25 @@ public class PastilleService {
                 new ArrayList<>()
         ));
 
+        updateCategory(pastille, body.category());
+        updateSuppliers(pastille, body.supplierIds());
         return mapper.toListDTO(pastille);
+    }
+
+    private void updateCategory(Pastille pastille, CategorySelection selection) {
+        if (selection == null) return;
+        pastille.setCategory(selection.id() == null ? null : categories.findById(selection.id())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoria não encontrada.")));
+    }
+
+    private void updateSuppliers(Pastille pastille, Set<Long> supplierIds) {
+        if (supplierIds == null) return;
+        List<Supplier> suppliers = supplierRepository.findAllById(supplierIds);
+        if (suppliers.size() != supplierIds.size()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fornecedor não encontrado.");
+        }
+        pastille.getSuppliers().clear();
+        pastille.getSuppliers().addAll(suppliers);
     }
 
     @Transactional(readOnly = true)
@@ -103,6 +134,8 @@ public class PastilleService {
                         "Manufacturer with ID '" + pastilleRequest.manufacturerId() + "' was not found."
                 ));
 
+        updateCategory(pastille, pastilleRequest.category());
+        updateSuppliers(pastille, pastilleRequest.supplierIds());
         pastille.setDescription(pastilleRequest.description());
         pastille.setManufacturer(manufacturer);
         pastille.setMinimumStockLevel(pastilleRequest.minimumStockLevel());
@@ -113,16 +146,12 @@ public class PastilleService {
     @Transactional
     public void deleteById(Long id) {
         Pastille pastille = pastilleRepository.findByIdForUpdate(id)
-                .orElseThrow(() -> new PastilleNotFound(
-                        "Pastille with ID '" + id + "' was not found."
-                ));
-
+                .orElseThrow(() -> new PastilleNotFound("Pastille with ID '" + id + "' was not found."));
         if (pastille.getSuppliers() != null) {
             pastille.getSuppliers().clear();
             pastilleRepository.flush();
         }
-
-        movementRepository.deleteAllByPastilleId(id);
+        movements.deleteAllByPastilleId(id);
         pastilleRepository.delete(pastille);
     }
 }

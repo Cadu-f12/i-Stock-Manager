@@ -11,5 +11,7 @@ public record PastilleListDTO(
         Integer minimumStockLevel,
         @JsonProperty("current_balance")
         Integer currentBalance,
-        String manufacturer
+        String manufacturer,
+        java.util.List<String> suppliers,
+        CategoryView category
 ) {}

@@ -2,6 +2,8 @@ package com.istock.system.controller;
 
 import com.istock.system.dtos.request.RegisterMovementRequest;
 import com.istock.system.dtos.response.ApiError;
+import com.istock.system.dtos.response.MovementReasonDTO;
+import org.springframework.dao.DataIntegrityViolationException;
 import com.istock.system.dtos.response.MovementResponseDTO;
 import com.istock.system.entities.MovementType;
 import com.istock.system.service.MovementService;
@@ -66,6 +68,18 @@ public class MovementsController {
             @Parameter(description = "Movement ID", example = "1") @PathVariable Long id
     ) {
         return ResponseEntity.ok(movementService.findById(id));
+    }
+
+    @GetMapping("/reasons")
+    @Operation(summary = "List active movement reasons")
+    public List<MovementReasonDTO> activeReasons() {
+        return movementService.activeReasons();
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> movementConflict() {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(409, "MOVEMENT_CONFLICT",
+                "The movement could not be saved because of a database constraint."));
     }
 
     @PostMapping

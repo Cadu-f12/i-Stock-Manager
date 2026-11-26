@@ -107,11 +107,16 @@ public class SupplierService {
         return supplierMapper.toResponseDTO(savedSupplier);
     }
 
+    @Transactional
     public SupplierResponseDTO deleteSupplier(Long id) {
 
         Supplier supplier = supplierRepository.findById(id)
                 .orElseThrow(() -> new UserNotFound(id));
 
+        if (!supplier.getPastilles().isEmpty()) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,
+                    "Remove the pastille links before deleting this supplier.");
+        }
         SupplierResponseDTO response = supplierMapper.toResponseDTO(supplier);
 
         supplierRepository.delete(supplier);

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import java.util.Set;
 
 public record UpdatePastilleRequest(
         @NotNull(message = "Description must not be null.")
@@ -19,5 +20,9 @@ public record UpdatePastilleRequest(
         @JsonProperty("minimum_stock_level")
         @PositiveOrZero(message = "Minimum stock level must be zero or greater.")
         @NotNull(message = "Minimum stock level must not be null.")
-        Integer minimumStockLevel
+        Integer minimumStockLevel,
+
+        @JsonProperty("supplier_ids")
+        Set<@NotNull @Positive Long> supplierIds,
+        @jakarta.validation.Valid CategorySelection category
 ) {}

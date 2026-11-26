@@ -1,6 +1,6 @@
 package com.istock.system.mapper;
 
-import com.istock.system.dtos.request.RegisterMovementRequest;
+import com.istock.system.dtos.response.ReasonMovementDTO;
 import com.istock.system.dtos.response.MovementPastilleDTO;
 import com.istock.system.dtos.response.MovementReasonDTO;
 import com.istock.system.dtos.response.MovementResponseDTO;
@@ -13,12 +13,6 @@ import java.util.List;
 
 @Component
 public class MovementMapper {
-
-    private final ReasonMovementMapper reasonMovementMapper;
-
-    public MovementMapper(ReasonMovementMapper reasonMovementMapper) {
-        this.reasonMovementMapper = reasonMovementMapper;
-    }
 
     public List<MovementResponseDTO> toResponseDTO(List<Movement> movements) {
         List<MovementResponseDTO> movementsDTO = new ArrayList<>();
@@ -36,7 +30,8 @@ public class MovementMapper {
                 movement.getPastille().getSkuCode(),
                 movement.getPastille().getDescription()
         );
-        MovementReasonDTO reason = reasonMovementMapper.toMovementReasonDTO(movement.getReasonMovement());
+        var details = ReasonMovementDTO.from(movement);
+        MovementReasonDTO reason = new MovementReasonDTO(details.id(), details.description(), details.type());
         MovementUserDTO user = new MovementUserDTO(
                 movement.getUser().getId(),
                 movement.getUser().getName()

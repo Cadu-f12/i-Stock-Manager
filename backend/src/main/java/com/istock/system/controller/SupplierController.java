@@ -84,6 +84,7 @@ public class SupplierController {
     @ApiResponse(responseCode = "200", description = "Supplier deleted")
     @ApiResponse(responseCode = "401", description = "Authentication required")
     @ApiResponse(responseCode = "404", description = "Supplier not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    @ApiResponse(responseCode = "409", description = "Supplier still has linked pastilles")
     public SupplierResponseDTO deleteSupplier(@PathVariable Long id) {
 
         return supplierService.deleteSupplier(id);

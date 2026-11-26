@@ -98,7 +98,7 @@ The active datasource configuration must match the execution environment. Do not
 
 The database seed is intended for development and testing only.
 
-It is not executed during normal application startup. It must be explicitly requested with the `--seed` argument and the local profile.
+It is not executed during normal application startup. It must be explicitly requested with the `--seed` argument.
 
 The seed creates development data such as:
 

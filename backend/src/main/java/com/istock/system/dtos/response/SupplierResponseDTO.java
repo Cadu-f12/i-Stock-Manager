@@ -12,5 +12,3 @@ public record SupplierResponseDTO(
         Boolean isActive,
         List<PastilleListDTO> pastilles
 ) {}
-
-

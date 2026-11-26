@@ -26,10 +26,7 @@ public class Movement {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "reason_movement_id",
-            nullable = false
-    )
+    @JoinColumn(name = "reason_movement_id")
     private ReasonMovement reasonMovement;
 
     @Column(name = "quantity", nullable = false, columnDefinition = "INT CHECK (quantity > 0)")
@@ -38,7 +35,18 @@ public class Movement {
     @Column(name = "date_time", nullable = false)
     private LocalDateTime dateTime = LocalDateTime.now();
 
+    @Column(name = "custom_reason", length = 80)
+    private String customReason;
+
     public Movement() {}
+
+    public void setCustomReason(String customReason) {
+        this.customReason = customReason;
+    }
+
+    public String getCustomReason() {
+        return customReason;
+    }
 
     public Movement(Long id, Pastille pastille, User user, ReasonMovement reasonMovement, Integer quantity, LocalDateTime dateTime) {
         this.id = id;

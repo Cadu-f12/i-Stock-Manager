@@ -21,7 +21,7 @@ public class Manufacturer {
     private Boolean isActive = true;
 
     @OneToMany(mappedBy = "manufacturer", fetch = FetchType.LAZY)
-    private List<Pastille> pastilles;
+    private List<Pastille> pastilles = new java.util.ArrayList<>();
 
     public Manufacturer() {}
 

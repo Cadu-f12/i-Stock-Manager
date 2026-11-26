@@ -1,193 +1,61 @@
-# DDA Metalúrgica — Sistema de Gerenciamento de Estoque
+# DDA Metalúrgica — I-Stock Manager
 
-> Projeto acadêmico de desenvolvimento de software voltado para o gerenciamento de estoque de pastilhas industriais utilizadas pela **DDA Metalúrgica**, em Santa Catarina, Brasil.
+**Português** | [English](README.md)
 
-**🇧🇷 Português** | [🇺🇸 English](README.md)
+O I-Stock Manager é uma aplicação web para gerenciar o estoque de pastilhas industriais utilizadas pela **DDA Metalúrgica**, em Santa Catarina. Centraliza os saldos dos produtos e o histórico de movimentações para ajudar a equipe a manter registros atualizados e apoiar decisões de reposição.
 
----
+O projeto nasceu no contexto acadêmico do **SENAI/SC**, desenvolvido por Carlos Eduardo, Eliot, Guilherme e Enrico. Seu objetivo é melhorar o acompanhamento feito por planilhas e registros manuais, reduzindo erros e facilitando a consulta ao estoque.
 
-## 📌 Sobre o Projeto
+## Funcionalidades disponíveis
 
-O **Sistema de Gerenciamento de Estoque da DDA Metalúrgica** é uma aplicação web que está sendo desenvolvida com o objetivo de melhorar o gerenciamento das pastilhas industriais utilizadas nos processos de usinagem e fabricação da empresa.
+- Cadastro de pastilhas por SKU, estoque mínimo e fabricante.
+- Entradas e saídas de estoque com identificação do responsável e histórico de alterações.
+- Pesquisa por ID, SKU, descrição ou fabricante e filtros de alerta e disponibilidade.
+- Ordenação e paginação de 50, 100 ou 200 produtos.
+- Administração de usuários e relatórios de estoque para administradores.
 
-Atualmente, a DDA Metalúrgica realiza o controle do estoque de pastilhas por meio de **planilhas eletrônicas e registros manuais**. Esse processo dificulta a manutenção de informações precisas e atualizadas, aumenta a possibilidade de erros humanos e pode atrasar a identificação de materiais que precisam ser repostos.
+## Acesso e perfis
 
-A solução proposta busca centralizar as informações do estoque em um único sistema, permitindo que os colaboradores registrem, acompanhem e consultem as movimentações dos materiais de maneira mais eficiente.
+Abra o endereço fornecido pelo responsável pela aplicação e entre com seu e-mail e senha cadastrados. Não há cadastro público de contas. Se o sistema ainda não estiver preparado, o responsável pode seguir [DESENVOLVIMENTO.md](DESENVOLVIMENTO.md).
 
-O projeto está sendo desenvolvido como parte de um projeto acadêmico no **SENAI/SC — Fraiburgo**.
+| Perfil | Ações disponíveis |
+| --- | --- |
+| Operator | Consultar, cadastrar e editar produtos; registrar entradas/saídas; gerenciar fabricantes e fornecedores e consultar histórico |
+| Admin | Todas as ações de estoque, além de administração de usuários e relatórios |
 
----
+Use **Sair** para encerrar o acesso. Quando a sessão expirar, entre novamente.
 
-## 🎯 Problema
+## Usar a aplicação
 
-A DDA Metalúrgica utiliza diversos tipos de pastilhas industriais, cada uma destinada a aplicações específicas nos processos de usinagem.
+### Pastilhas e movimentações
 
-Como esses materiais são essenciais para a produção e possuem consumo significativo, manter informações precisas sobre o estoque é fundamental.
+Em **Produtos**, selecione **Nova pastilha** e informe SKU, fabricante e estoque mínimo. Na aba **Categorias**, a lixeira permite excluir uma categoria sem pastilhas após confirmação. Cadastre categorias na aba **Categorias** e escolha uma ao criar ou editar a pastilha. Marque os fornecedores cadastrados que atendem a pastilha. Os nomes aparecem na tabela de estoque. Use a busca, os filtros, a ordenação e a paginação para localizar o item. Em **Fabricantes** e **Fornecedores**, clique no ícone de lixeira na coluna **Operações** e confirme para excluir um cadastro sem vínculos. Se houver pastilhas vinculadas, altere o fabricante ou remova o fornecedor na edição das pastilhas primeiro.
 
-O processo atual baseado em planilhas apresenta diversos desafios:
+Em **Produtos → Motivos de movimentação**, cadastre motivos de entrada ou saída. Edite um motivo para renomeá-lo ou reativá-lo. A desativação preserva as movimentações anteriores. Na lista de pastilhas, **Excluir pastilha** remove definitivamente a pastilha e suas movimentações após confirmação, inclusive dos relatórios.
 
-* Registro manual das movimentações de estoque.
-* Maior possibilidade de erros humanos.
-* Dificuldade para manter as informações atualizadas.
-* Visibilidade limitada sobre os níveis atuais do estoque.
-* Dificuldade para identificar materiais próximos de níveis críticos.
-* Atrasos na identificação da necessidade de reposição.
-* Falta de um histórico centralizado das movimentações.
-* Dificuldade na geração de relatórios confiáveis sobre consumo e estoque.
+Para registrar uma entrada com motivo de uso único, clique em **+**, selecione **Entrada - Customizada** e escreva o motivo abaixo do seletor. O texto fica no histórico daquela movimentação.
 
-Esses problemas podem resultar na **falta de materiais e em possíveis interrupções na produção**.
+O cadastro inicia com saldo zero. Use **+** ou **−**, selecione o motivo e informe a quantidade. Consulte o responsável e a data em **Histórico**. O filtro de alerta inclui saldos até cinco unidades acima do mínimo.
 
----
+### Usuários
 
-## 💡 Solução Proposta
+Como Admin, abra **Usuários** para cadastrar, consultar, editar, ativar, desativar ou excluir contas. Defina o perfil e o status de cada usuário. Senhas novas exigem ao menos 8 caracteres e no máximo 72 bytes UTF-8; deixar a senha vazia durante a edição mantém a anterior.
 
-A solução proposta consiste em um **sistema web de gerenciamento de estoque**, desenvolvido especificamente para o controle das pastilhas industriais utilizadas pela empresa.
+Você não pode excluir ou desativar sua própria conta nem remover seu próprio papel de Admin por essa tela. Se a exclusão for impedida por registros vinculados, desative a conta.
 
-O sistema deverá centralizar as informações do estoque e fornecer recursos para controlar entradas e saídas de materiais, acompanhar níveis mínimos, consultar o histórico de movimentações e auxiliar no planejamento de reposições.
+### Relatórios
 
-A aplicação pretende oferecer uma interface simples e intuitiva, permitindo que os responsáveis pelo estoque tenham acesso rápido a informações confiáveis sobre a situação atual dos materiais.
+Como Admin, abra **Metadados**. O gráfico por categoria conta as pastilhas atuais e lista também as categorias cadastradas sem pastilhas. Os totais mensais somam unidades de entradas e saídas explícitas, agrupadas pelo horário de São Paulo. Em **Entradas e saídas por mês**, selecione **Pastilhas** ou **Estoque anterior** para consultar cada estoque separadamente. Use os filtros de ano, categoria e produto para restringir a visão mensal.
 
----
+Cadastrar um produto ou editar diretamente sua quantidade não conta como entrada ou saída no gráfico mensal. Os filtros de categoria consideram a categoria atual de cada produto.
 
-## 🏗️ Arquitetura do Sistema
+## Limitações atuais e ajuda
 
-A arquitetura inicial será baseada em uma **aplicação web**, separando o frontend e o backend.
+- A exportação de relatórios está indisponível.
+- **Metadados** reúne as movimentações mensais de pastilhas e os gráficos do estoque anterior em uma única página.
+- Se o servidor estiver indisponível, contate o responsável pela aplicação. Se uma gravação conflitar com outra alteração, recarregue o estoque; se a sessão expirar, entre novamente.
 
-```text
-┌─────────────────────────────┐
-│          Frontend           │
-│          React + Vite       │
-└──────────────┬──────────────┘
-               │
-               │ HTTP / REST API
-               ▼
-┌─────────────────────────────┐
-│           Backend           │
-│       Java + Spring Boot    │
-└──────────────┬──────────────┘
-               │
-               │ Acesso aos dados
-               ▼
-┌─────────────────────────────┐
-│          Database           │
-│         MySQL               │
-└─────────────────────────────┘
-```
+## Outras documentações
 
-Essa arquitetura permitirá que frontend e backend sejam desenvolvidos de maneira independente, comunicando-se por meio de uma API REST.
-
----
-
-## 🛠️ Tecnologias
-
-A stack tecnológica inicialmente planejada para o projeto é:
-
-### Backend
-
-* **Java**
-* **Spring Boot**
-* **Spring Data JPA**
-* **Hibernate**
-* **REST API**
-
-### Frontend
-
-* **Angular**
-* **TypeScript**
-* **HTML**
-* **CSS**
-
-### Banco de Dados
-
-* **MySQL**
-
-### Ferramentas de Desenvolvimento
-
-* **Git**
-* **GitHub**
-* **Maven**
-
----
-
-## 🎓 Contexto Acadêmico
-
-Este projeto está sendo desenvolvido como um **projeto acadêmico de engenharia de software** no:
-
-**SENAI/SC — Florianópolis, Santa Catarina, Brasil**
-
-O projeto proporciona a aplicação prática de conceitos de desenvolvimento de software na resolução de um problema real de negócio, incluindo:
-
-* Análise de requisitos.
-* Arquitetura de software.
-* Modelagem de banco de dados.
-* Desenvolvimento backend.
-* Desenvolvimento frontend.
-* Desenvolvimento de APIs REST.
-* Autenticação e autorização.
-* Controle de versão.
-* Testes.
-* Documentação de software.
-
----
-
-## 📂 Estrutura do Projeto
-
-O projeto está organizado em uma estrutura **full stack**, separando o backend e o frontend em diretórios independentes.
-
-```text
-i-Stock-Manager/
-│
-├── backend/                    # Application backend
-│   ├── pom.xml                # Maven configuration and dependencies
-│   │
-│   └── src/
-│       ├── main/
-│       │   ├── java/          # Application source code
-│       │   │   └── ...
-│       │   │
-│       │   └── resources/     # Configuration files and resources
-│       │       └── ...
-│       │
-│       └── test/
-│           └── java/          # Automated tests
-│               └── ...
-│
-├── frontend/                   # Application frontend
-│   ├── package.json            # Project dependencies and scripts
-│   ├── vite.config.ts          # Vite configuration
-│   ├── tsconfig.json           # TypeScript configuration
-│   │
-│   └── src/
-│       └── ...                 # User interface source code
-│
-├── mysql_data/                 # Data of mysql volume (Do not remove!)
-│
-├── compose.yaml                # Docker compose file to containers
-│
-├── .env                        # Your environment variables
-├── .env.example                # Keys of variables
-│ 
-└── README.md
-```
-
-A estrutura do frontend e a organização geral do repositório serão definidas conforme a arquitetura do projeto evoluir.
-
----
-
-## 👥 Equipe de Desenvolvimento
-
-Este projeto está sendo desenvolvido colaborativamente por alunos do **SENAI/SC — Fraiburgo**.
-
-### Integrantes
-
-* **Carlos Eduardo**
-* **Eliot**
-* **Guilherme**
-* **Enrico**
-
----
-
-## 🌐 Documentação
-
-* 🇧🇷 **Português** — `README.pt-BR.md`
-* 🇺🇸 **English** — [`README.md`](README.md)
+- [DESENVOLVIMENTO.md](DESENVOLVIMENTO.md): preparação do ambiente, Docker, execução local, configuração, arquitetura, APIs, testes e builds.
+- [AGENTS.md](AGENTS.md): objetivo, escopo, referências e regras de manutenção para agentes de IA.

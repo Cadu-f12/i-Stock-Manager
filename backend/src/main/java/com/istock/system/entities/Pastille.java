@@ -30,6 +30,13 @@ public class Pastille {
     )
     private Manufacturer manufacturer;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private PastilleCategory category;
+
+    public PastilleCategory getCategory() { return category; }
+    public void setCategory(PastilleCategory category) { this.category = category; }
+
     @ManyToMany
     @JoinTable(
             name = "pastille_supplier",

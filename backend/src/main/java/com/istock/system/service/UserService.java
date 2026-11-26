@@ -61,9 +61,12 @@ public class UserService {
     }
 
     public UserResponseDTO fetchUser(String email) {
-        User user = userRepository.findByEmail(email)
+        return userMapper.toResponseDTO(findByEmail(email));
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundWithEmail(email));
-        return userMapper.toResponseDTO(user);
     }
 
     public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
@@ -73,7 +76,9 @@ public class UserService {
 
         user.setName(dto.name());
         user.setEmail(dto.email());
-        user.setPassword(dto.password() );
+        if (dto.password() != null && !dto.password().isBlank()) {
+            user.setPassword(passwordEncoder.encode(dto.password()));
+        }
 
         User savedUser = userRepository.save(user);
 

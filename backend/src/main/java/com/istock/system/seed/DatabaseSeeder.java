@@ -8,8 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.TreeMap;
 import java.time.LocalDateTime;
 
 @Component
@@ -42,6 +41,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public void run(String... args) {
 
         if (!hasSeedArgument(args)) {
@@ -56,8 +56,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         seedManufacturers();
         seedSuppliers();
         seedMovementReasons();
-        seedPastilles();
-        seedMovements();
+        seedMovements(seedPastilles());
 
         System.out.println("=================================");
         System.out.println("✅ Database seed finalizado.");
@@ -144,18 +143,18 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
     }
 
-    private void seedPastilles() {
+    private List<Pastille> seedPastilles() {
 
         List<Manufacturer> manufacturers = manufacturerRepository.findAll();
         List<Supplier> suppliers = supplierRepository.findAll();
 
         if (manufacturers.isEmpty() || suppliers.isEmpty()) {
             System.out.println("→ Não foi possível criar as pastilhas.");
-            return;
+            return List.of();
         }
 
-        Map<String, Manufacturer> manufacturerByName = manufacturers.stream()
-                .collect(Collectors.toMap(Manufacturer::getName, Function.identity()));
+        Map<String, Manufacturer> manufacturerByName = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        manufacturers.forEach(item -> manufacturerByName.putIfAbsent(item.getName(), item));
         List<Pastille> pastilles = List.of(
                 demoPastille("SKU-001", "Inserto torneamento CNMG 120408-PM", 12, manufacturerByName.get("Sandvik"), suppliers, 0, 1),
                 demoPastille("SKU-002", "Inserto fresamento APKT 1604", 8, manufacturerByName.get("Kennametal"), suppliers, 0, 2),
@@ -173,8 +172,9 @@ public class DatabaseSeeder implements CommandLineRunner {
         List<Pastille> toCreate = pastilles.stream()
                 .filter(item -> !pastilleRepository.existsBySkuCode(item.getSkuCode()))
                 .toList();
-        pastilleRepository.saveAll(toCreate);
+        List<Pastille> created = pastilleRepository.saveAll(toCreate);
         System.out.println("→ " + toCreate.size() + " pastilhas criadas.");
+        return created;
     }
 
     private Pastille demoPastille(String sku, String description, int minimum, Manufacturer manufacturer,
@@ -183,20 +183,19 @@ public class DatabaseSeeder implements CommandLineRunner {
                 List.of(suppliers.get(supplierOffset % suppliers.size()), suppliers.get((supplierOffset + 1) % suppliers.size())), List.of());
     }
 
-    private void seedMovements() {
+    private void seedMovements(List<Pastille> pastilles) {
         if (movementRepository.count() > 0) {
             System.out.println("→ Movimentações já cadastradas; histórico de demonstração não duplicado.");
             return;
         }
         User user = userRepository.findByEmail("admin@istock.com").orElse(null);
-        List<Pastille> pastilles = pastilleRepository.findAll();
         List<ReasonMovement> reasons = reasonMovementRepository.findAll();
         if (user == null || pastilles.isEmpty() || reasons.isEmpty()) {
             System.out.println("→ Não foi possível criar as movimentações.");
             return;
         }
-        Map<String, ReasonMovement> reasonByDescription = reasons.stream()
-                .collect(Collectors.toMap(ReasonMovement::getDescription, Function.identity()));
+        Map<String, ReasonMovement> reasonByDescription = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        reasons.forEach(item -> reasonByDescription.putIfAbsent(item.getDescription(), item));
         LocalDateTime now = LocalDateTime.now();
         List<Movement> movements = new java.util.ArrayList<>();
         for (int i = 0; i < pastilles.size(); i++) {

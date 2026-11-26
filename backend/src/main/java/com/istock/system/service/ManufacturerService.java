@@ -15,6 +15,7 @@ import com.istock.system.repository.ManufacturerRepository;
 import com.istock.system.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -72,7 +73,7 @@ public class ManufacturerService {
         Manufacturer manufacturer = manufacturerRepository.findById(id)
                 .orElseThrow(() -> new UserNotFound(id));
 
-        manufacturer.setPastilles(dto.pastilles());
+        if (dto.pastilles() != null) manufacturer.setPastilles(dto.pastilles());
         manufacturer.setName(dto.name());
         manufacturer.setContact(dto.contact());
 
@@ -81,11 +82,16 @@ public class ManufacturerService {
         return manufacturerMapper.toResponseDTO(savedManufacturer);
     }
 
+    @Transactional
     public ManufacturerResponseDTO deleteManufacturer(Long id) {
 
         Manufacturer manufacturer = manufacturerRepository.findById(id)
                 .orElseThrow(() -> new UserNotFound(id));
 
+        if (!manufacturer.getPastilles().isEmpty()) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,
+                    "Remove the pastille links before deleting this manufacturer.");
+        }
         ManufacturerResponseDTO response = manufacturerMapper.toResponseDTO(manufacturer);
 
         manufacturerRepository.delete(manufacturer);
