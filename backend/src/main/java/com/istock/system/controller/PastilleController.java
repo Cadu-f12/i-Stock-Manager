@@ -68,8 +68,11 @@ public class PastilleController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a pastille and its movement history")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(@PathVariable Long id) {
+    @ApiResponse(responseCode = "204", description = "Pastille and related movements deleted")
+    @ApiResponse(responseCode = "401", description = "Authentication required")
+    @ApiResponse(responseCode = "404", description = "Pastille not found", content = @Content(schema = @Schema(implementation = com.istock.system.dtos.response.ApiError.class)))
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         pastilleService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

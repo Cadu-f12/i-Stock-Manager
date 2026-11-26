@@ -147,8 +147,10 @@ public class PastilleService {
     public void deleteById(Long id) {
         Pastille pastille = pastilleRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new PastilleNotFound("Pastille with ID '" + id + "' was not found."));
-        pastille.getSuppliers().clear();
-        pastilleRepository.flush();
+        if (pastille.getSuppliers() != null) {
+            pastille.getSuppliers().clear();
+            pastilleRepository.flush();
+        }
         movements.deleteAllByPastilleId(id);
         pastilleRepository.delete(pastille);
     }

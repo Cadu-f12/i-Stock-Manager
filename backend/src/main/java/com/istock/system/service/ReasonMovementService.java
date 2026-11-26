@@ -5,6 +5,7 @@ import com.istock.system.dtos.request.UpdateReasonMovementRequest;
 import com.istock.system.dtos.response.ReasonMovementDTO;
 import com.istock.system.entities.ReasonMovement;
 import com.istock.system.exception.ReasonMovementNotFound;
+import com.istock.system.mapper.ReasonMovementMapper;
 import com.istock.system.repository.ReasonMovementRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,43 +13,58 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional(readOnly = true)
 public class ReasonMovementService {
-    private final ReasonMovementRepository reasons;
 
-    public ReasonMovementService(ReasonMovementRepository reasons) {
-        this.reasons = reasons;
+    private final ReasonMovementRepository reasonMovementRepository;
+    private final ReasonMovementMapper reasonMovementMapper;
+
+    public ReasonMovementService(
+            ReasonMovementRepository reasonMovementRepository,
+            ReasonMovementMapper reasonMovementMapper
+    ) {
+        this.reasonMovementRepository = reasonMovementRepository;
+        this.reasonMovementMapper = reasonMovementMapper;
     }
 
-    public List<ReasonMovementDTO> findAll(Boolean active) {
-        var matches = active == null ? reasons.findAll() : reasons.findAllByIsActive(active);
-        return matches.stream().map(ReasonMovementDTO::from).toList();
-    }
-
-    public ReasonMovementDTO findById(Long id) {
-        return ReasonMovementDTO.from(requireReason(id));
+    @Transactional(readOnly = true)
+    public List<ReasonMovementDTO> findAll(Boolean isActive) {
+        return (isActive == null
+                ? reasonMovementRepository.findAll()
+                : reasonMovementRepository.findAllByIsActive(isActive))
+                .stream()
+                .map(reasonMovementMapper::toReasonMovementDTO)
+                .toList();
     }
 
     @Transactional
     public ReasonMovementDTO create(CreateReasonMovementRequest request) {
-        return ReasonMovementDTO.from(reasons.save(new ReasonMovement(true, request.type(), request.description())));
+        ReasonMovement reasonMovement = reasonMovementMapper.toEntity(request);
+        return reasonMovementMapper.toReasonMovementDTO(reasonMovementRepository.save(reasonMovement));
     }
 
     @Transactional
-    public ReasonMovementDTO update(Long id, UpdateReasonMovementRequest request) {
-        var reason = requireReason(id);
-        reason.setDescription(request.description());
-        reason.setActive(request.isActive());
-        return ReasonMovementDTO.from(reason);
+    public ReasonMovementDTO updateById(Long id, UpdateReasonMovementRequest request) {
+        ReasonMovement reasonMovement = requireReasonMovement(id);
+        reasonMovementMapper.updateEntity(reasonMovement, request);
+        return reasonMovementMapper.toReasonMovementDTO(reasonMovementRepository.save(reasonMovement));
     }
 
     @Transactional
-    public void deactivate(Long id) {
-        requireReason(id).setActive(false);
+    public void deactivateById(Long id) {
+        ReasonMovement reasonMovement = requireReasonMovement(id);
+        reasonMovement.setActive(false);
+        reasonMovementRepository.save(reasonMovement);
     }
 
-    private ReasonMovement requireReason(Long id) {
-        return reasons.findById(id).orElseThrow(() ->
-                new ReasonMovementNotFound("Movement reason with ID '" + id + "' was not found."));
+    @Transactional(readOnly = true)
+    public ReasonMovementDTO findById(Long id) {
+        return reasonMovementMapper.toReasonMovementDTO(requireReasonMovement(id));
+    }
+
+    private ReasonMovement requireReasonMovement(Long id) {
+        return reasonMovementRepository.findById(id)
+                .orElseThrow(() -> new ReasonMovementNotFound(
+                        "Movement reason with ID '" + id + "' was not found."
+                ));
     }
 }

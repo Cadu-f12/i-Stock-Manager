@@ -9,5 +9,8 @@ public record UpdateReasonMovementRequest(
         @NotBlank(message = "Description must not be blank.")
         @Size(max = 80, message = "Description must not exceed 80 characters.")
         String description,
-        @JsonProperty("is_active") @NotNull(message = "Active status is required.") Boolean isActive
+
+        @JsonProperty("is_active")
+        @NotNull(message = "Active status is required.")
+        Boolean isActive
 ) {}
